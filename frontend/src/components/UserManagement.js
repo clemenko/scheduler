@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Box, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@mui/material';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import LockResetIcon from '@mui/icons-material/LockReset';
 import axios from 'axios';
 import ResetPasswordModal from './ResetPasswordModal';
 
@@ -67,21 +66,36 @@ const UserManagement = ({ showSnackbar }) => {
       <Typography variant="h5" component="h2" gutterBottom>
         User Management
       </Typography>
-      <List>
-        {users.map(user => (
-          <ListItem key={user._id}>
-            <ListItemText primary={user.name} secondary={user.email} />
-            <ListItemSecondaryAction>
-              <Button edge="end" aria-label="reset-password" onClick={() => openModal(user)}>
-                Reset Password
-              </Button>
-              <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteUser(user._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
+      <Button variant="contained" color="primary" disabled>
+        Add User
+      </Button>
+      <TableContainer component={Paper} sx={{ mt: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map(user => (
+              <TableRow key={user._id}>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  <Button onClick={() => openModal(user)}>Reset Password</Button>
+                  <IconButton onClick={() => handleDeleteUser(user._id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
       <ResetPasswordModal
         open={modalOpen}
         handleClose={closeModal}

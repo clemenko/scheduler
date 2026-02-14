@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    image: clemenko/sheduler-backend
     ports:
       - '5000:5000'
     volumes:
@@ -10,6 +11,7 @@ services:
       - mongo
   frontend:
     build: ./frontend
+    image: clemenko/sheduler-frontend
     ports:
       - '3000:3000'
     volumes:
