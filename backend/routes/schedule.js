@@ -1,32 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const Schedule = require('../models/Schedule');
-const Event = require('../models/Event');
+const Shift = require('../models/Shift');
 const auth = require('../middleware/auth');
 const sendEmail = require('../utils/email');
 
-// Sign up for an event
+// Sign up for a shift
 router.post('/signup', auth, async (req, res) => {
-  const { eventId, vehicleId } = req.body;
+  const { shiftId, vehicleId } = req.body;
   try {
-    // Check if event is full
-    const event = await Event.findById(eventId);
-    if (!event) {
-      return res.status(404).json({ msg: 'Event not found' });
+    // Check if shift is full
+    const shift = await Shift.findById(shiftId);
+    if (!shift) {
+      return res.status(404).json({ msg: 'Shift not found' });
     }
-    const signups = await Schedule.find({ event: eventId });
-    if (signups.length >= event.max_slots) {
-      return res.status(400).json({ msg: 'Event is full' });
+    const signups = await Schedule.find({ shift: shiftId });
+    if (signups.length >= shift.max_slots) {
+      return res.status(400).json({ msg: 'Shift is full' });
     }
 
     // Check if user is already signed up
-    const existingSignup = await Schedule.findOne({ event: eventId, user: req.user.id });
+    const existingSignup = await Schedule.findOne({ shift: shiftId, user: req.user.id });
     if (existingSignup) {
-      return res.status(400).json({ msg: 'User already signed up for this event' });
+      return res.status(400).json({ msg: 'User already signed up for this shift' });
     }
 
     const newSignup = new Schedule({
-      event: eventId,
+      shift: shiftId,
       user: req.user.id,
       vehicle: vehicleId
     });
@@ -68,13 +68,13 @@ router.post('/send-reminders', async (req, res) => {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    const schedules = await Schedule.find({ 'event.start_time': { $gte: now, $lte: twentyFourHoursFromNow }, reminderSent: { $ne: true } }).populate('event user');
+    const schedules = await Schedule.find({ 'shift.start_time': { $gte: now, $lte: twentyFourHoursFromNow }, reminderSent: { $ne: true } }).populate('shift user');
 
     for (const schedule of schedules) {
       const emailOptions = {
         email: schedule.user.email,
-        subject: 'Event Reminder',
-        message: `This is a reminder that you are signed up for the event: ${schedule.event.title}. It starts at ${schedule.event.start_time}.`
+        subject: 'Shift Reminder',
+        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${schedule.shift.start_time}.`
       };
       await sendEmail(emailOptions);
       schedule.reminderSent = true;

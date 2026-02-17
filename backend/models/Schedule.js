@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const ScheduleSchema = new mongoose.Schema({
-  event: {
+  shift: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Event'
+    ref: 'Shift'
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,

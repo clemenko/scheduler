@@ -1,25 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import axios from 'axios';
 import EventFormModal from './EventFormModal';
+import { EventContext } from '../context/EventContext';
 
 const EventManagement = () => {
-  const [events, setEvents] = useState([]);
+  const { events, fetchEvents } = useContext(EventContext);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
-
-  const fetchEvents = async () => {
-    try {
-      const res = await axios.get('/api/events');
-      setEvents(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   const handleAddEvent = () => {
     setCurrentEvent(null);
@@ -38,7 +26,7 @@ const EventManagement = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      fetchEvents();
+      fetchEvents(); // Refetch events from context
     } catch (err) {
       console.error(err);
     }
@@ -46,10 +34,6 @@ const EventManagement = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-  };
-
-  const handleSave = () => {
-    fetchEvents();
   };
 
   return (
@@ -93,7 +77,7 @@ const EventManagement = () => {
         open={modalOpen}
         handleClose={handleCloseModal}
         currentEvent={currentEvent}
-        onSave={handleSave}
+        onSave={fetchEvents} // Pass fetchEvents directly to onSave
       />
     </div>
   );

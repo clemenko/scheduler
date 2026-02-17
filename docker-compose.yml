@@ -1,30 +1,48 @@
 services:
-  backend:
-    build: ./backend
-    image: clemenko/sheduler-backend
-    ports:
-      - '5000:5000'
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    depends_on:
-      - mongo
-  frontend:
+  wavfd_sched_frontend:
     build: ./frontend
     image: clemenko/sheduler-frontend
-    ports:
-      - '3000:3000'
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    container_name: wavfd_sched_frontend
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
     depends_on:
-      - backend
-  mongo:
+      - wavfd_sched_backend
+    labels:
+      - "traefik.http.routers.wavfdshed.rule=Host(`sched.wavfd.org`)"
+      - "traefik.http.routers.wavfdshed.entrypoints=https"
+      - "traefik.http.routers.wavfdshed.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.wavfdshed.middlewares=security-headers"
+
+  wavfd_sched_backend:
+    build: ./backend
+    image: clemenko/sheduler-backend
+    container_name: wavfd_sched_backend
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    environment:
+      - ADMIN_PASSWORD=Pa22word
+      - ADMIN_EMAIL=admin@wavfd.org
+      - CALENDAR_TITLE=WAVFD Scheduler
+    command: sh -c "npm install && node seed.js && npm start"
+    depends_on:
+      - wavfd_sched_mongo
+    labels:
+      - "traefik.enable=false"
+
+  wavfd_sched_mongo:
     image: mongo:latest
-    ports:
-      - '27017:27017'
+    container_name: wavfd_sched_mongo
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
     volumes:
       - mongo-data:/data/db
+    # volumes:
+    #  - /home/wavfdshed/mongo:/data/db
 
 volumes:
   mongo-data:

@@ -15,12 +15,12 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/vehicles', require('./routes/vehicles'));
-app.use('/api/events', require('./routes/events'));
+app.use('/api/shifts', require('./routes/shifts'));
 app.use('/api/schedule', require('./routes/schedule'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/users', require('./routes/users'));
 
-mongoose.connect('mongodb://mongo:27017/scheduler', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb://wavfd_sched_mongo:27017/scheduler', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('MongoDB connected');
     app.listen(port, () => {

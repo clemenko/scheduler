@@ -3,16 +3,21 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
 import Calendar from './components/Calendar';
 import TableView from './TableView';
+import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
 import Admin from './components/Admin';
 import Register from './components/Register';
 import Login from './components/Login';
 import { AuthContext, AuthProvider } from './context/AuthContext';
+import { EventProvider } from './context/EventContext';
 import axios from 'axios';
 
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <EventProvider>
+        <AppContent />
+      </EventProvider>
     </AuthProvider>
   );
 }
@@ -56,6 +61,9 @@ function AppContent() {
             )}
             {user ? (
               <>
+                <Typography sx={{ mr: 2 }}>
+                  {user.email}
+                </Typography>
                 {user.role === 'admin' && (
                   <Button color="inherit" component={Link} to="/admin">
                     Admin
@@ -72,12 +80,16 @@ function AppContent() {
             )}
           </Toolbar>
         </AppBar>
-        <Container>
+        <Container sx={{ mt: 4 }}>
           <Routes>
             <Route path="/" element={view === 'calendar' ? <Calendar /> : <TableView />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route element={<PublicRoute />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+            <Route element={<PrivateRoute requiredRole="admin" />}>
+              <Route path="/admin" element={<Admin />} />
+            </Route>
           </Routes>
         </Container>
       </div>

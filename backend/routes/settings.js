@@ -9,7 +9,8 @@ router.get('/', async (req, res) => {
   try {
     let settings = await Setting.findOne();
     if (!settings) {
-      settings = new Setting();
+      const defaultTitle = process.env.CALENDAR_TITLE || 'Fire Department Scheduler';
+      settings = new Setting({ calendarTitle: defaultTitle });
       await settings.save();
     }
     res.json(settings);

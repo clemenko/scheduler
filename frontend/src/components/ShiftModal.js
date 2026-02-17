@@ -15,7 +15,7 @@ const style = {
   p: 4,
 };
 
-const EventModal = ({ open, handleClose, event }) => {
+const ShiftModal = ({ open, handleClose, shift }) => {
   const { user } = useContext(AuthContext);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState('');
@@ -37,14 +37,14 @@ const EventModal = ({ open, handleClose, event }) => {
   const handleSignUp = async () => {
     try {
       await axios.post('/api/schedule/signup', {
-        eventId: event._id,
+        shiftId: shift._id,
         vehicleId: selectedVehicle,
       }, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      alert('You have successfully signed up for the event!');
+      alert('You have successfully signed up for the shift!');
       handleClose();
     } catch (err) {
       console.error(err);
@@ -70,17 +70,17 @@ const EventModal = ({ open, handleClose, event }) => {
     <Modal open={open} onClose={handleClose}>
       <Box sx={style}>
         <Typography variant="h6" component="h2">
-          {event?.title}
+          {shift?.title}
         </Typography>
         <Typography sx={{ mt: 2 }}>
-          {new Date(event?.start_time).toLocaleString()} - {new Date(event?.end_time).toLocaleString()}
+          {new Date(shift?.start_time).toLocaleString()} - {new Date(shift?.end_time).toLocaleString()}
         </Typography>
         <Typography variant="subtitle1" sx={{ mt: 2 }}>
           Signed Up:
         </Typography>
-        {event?.signups && event.signups.length > 0 ? (
+        {shift?.signups && shift.signups.length > 0 ? (
           <ul>
-            {event.signups.map(signup => (
+            {shift.signups.map(signup => (
               <li key={signup._id}>
                 {signup.user.name} - {signup.vehicle?.name}
                 {(user?.role === 'admin' || user?.id === signup.user._id) && (
@@ -91,7 +91,7 @@ const EventModal = ({ open, handleClose, event }) => {
           </ul>
         ) : (
           <Typography variant="body2" sx={{ mt: 1 }}>
-            No one has signed up for this event yet.
+            No one has signed up for this shift yet.
           </Typography>
         )}
         <FormControl fullWidth sx={{ mt: 2 }}>
@@ -112,4 +112,4 @@ const EventModal = ({ open, handleClose, event }) => {
   );
 };
 
-export default EventModal;
+export default ShiftModal;
