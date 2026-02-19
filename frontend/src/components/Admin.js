@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Container, Box, Tabs, Tab } from '@mui/material';
 import VehicleManagement from './VehicleManagement';
-import EventManagement from './EventManagement';
+import ShiftManagement from './ShiftManagement';
 import SettingsManagement from './SettingsManagement';
 import UserManagement from './UserManagement';
 import CustomSnackbar from './CustomSnackbar';
@@ -55,7 +55,7 @@ const Admin = () => {
           <Tab label="Settings" />
           <Tab label="User Management" />
           <Tab label="Vehicles" />
-          <Tab label="Events" />
+          <Tab label="Shifts" />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -68,7 +68,7 @@ const Admin = () => {
         <VehicleManagement showSnackbar={showSnackbar} />
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <EventManagement showSnackbar={showSnackbar} />
+        <ShiftManagement showSnackbar={showSnackbar} />
       </TabPanel>
       <CustomSnackbar
         open={snackbar.open}

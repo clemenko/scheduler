@@ -41,7 +41,7 @@ router.put('/:id/role', auth, admin, async (req, res) => {
   const { role } = req.body;
 
   // Validate role
-  if (role !== 'admin' && role !== 'user') {
+  if (role !== 'admin' && role !== 'viewer') {
     return res.status(400).json({ msg: 'Invalid role' });
   }
 
@@ -52,7 +52,7 @@ router.put('/:id/role', auth, admin, async (req, res) => {
     }
 
     // To prevent the last admin from being demoted, check if there is at least one other admin.
-    if (user.role === 'admin' && role === 'user') {
+    if (user.role === 'admin' && role === 'viewer') {
       const adminCount = await User.countDocuments({ role: 'admin' });
       if (adminCount <= 1) {
         return res.status(400).json({ msg: 'Cannot remove the last admin' });

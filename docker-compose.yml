@@ -1,7 +1,7 @@
 services:
   wavfd_sched_frontend:
     build: ./frontend
-    image: clemenko/sheduler-frontend
+    image: clemenko/scheduler-frontend
     container_name: wavfd_sched_frontend
     security_opt:
       - no-new-privileges:true
@@ -16,7 +16,7 @@ services:
 
   wavfd_sched_backend:
     build: ./backend
-    image: clemenko/sheduler-backend
+    image: clemenko/scheduler-backend
     container_name: wavfd_sched_backend
     security_opt:
       - no-new-privileges:true
@@ -25,11 +25,14 @@ services:
       - ADMIN_PASSWORD=Pa22word
       - ADMIN_EMAIL=admin@wavfd.org
       - CALENDAR_TITLE=WAVFD Scheduler
-    command: sh -c "npm install && node seed.js && npm start"
+      - JWT_SECRET=your_super_secret_jwt_secret_change_me
+    command: sh -c "node seed.js && npm start"
     depends_on:
       - wavfd_sched_mongo
     labels:
       - "traefik.enable=false"
+    expose:
+      - "5000"
 
   wavfd_sched_mongo:
     image: mongo:latest

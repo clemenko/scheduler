@@ -120,7 +120,7 @@ const UserManagement = ({ showSnackbar }) => {
                       onChange={(e) => handleRoleChange(user._id, e.target.value)}
                       disabled={user._id === currentUser?.id}
                     >
-                      <MenuItem value="user">User</MenuItem>
+                      <MenuItem value="viewer">Viewer</MenuItem>
                       <MenuItem value="admin">Admin</MenuItem>
                     </Select>
                   </FormControl>

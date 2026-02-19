@@ -3,6 +3,14 @@ import { Modal, Box, Typography, Button, Select, MenuItem, FormControl, InputLab
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 
+// Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
+const fromNaiveUTC = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
+    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
+};
+
 const style = {
   position: 'absolute',
   top: '50%',
@@ -73,7 +81,7 @@ const ShiftModal = ({ open, handleClose, shift }) => {
           {shift?.title}
         </Typography>
         <Typography sx={{ mt: 2 }}>
-          {new Date(shift?.start_time).toLocaleString()} - {new Date(shift?.end_time).toLocaleString()}
+          {fromNaiveUTC(shift?.start_time)?.toLocaleString()} - {fromNaiveUTC(shift?.end_time)?.toLocaleString()}
         </Typography>
         <Typography variant="subtitle1" sx={{ mt: 2 }}>
           Signed Up:

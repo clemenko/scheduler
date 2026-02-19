@@ -3,38 +3,45 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import EventModal from './EventModal';
-import { EventContext } from '../context/EventContext';
+import ShiftModal from './ShiftModal';
+import { ShiftContext } from '../context/ShiftContext';
+
+// Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
+const fromNaiveUTC = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
+    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
+};
 
 const Calendar = () => {
-  const { events, fetchEvents } = useContext(EventContext);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const { shifts, fetchShifts } = useContext(ShiftContext);
+  const [selectedShift, setSelectedShift] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const formattedEvents = useMemo(() => events.map(event => ({
-    title: event.title,
-    start: new Date(event.start_time),
-    end: new Date(event.end_time),
-    id: event._id,
+  const formattedShifts = useMemo(() => shifts.map(shift => ({
+    title: shift.title,
+    start: fromNaiveUTC(shift.start_time),
+    end: fromNaiveUTC(shift.end_time),
+    id: shift._id,
     extendedProps: {
-      ...event
+      ...shift
     }
-  })), [events]);
+  })), [shifts]);
 
-  const handleEventClick = (clickInfo) => {
-    setSelectedEvent(clickInfo.event.extendedProps);
+  const handleShiftClick = (clickInfo) => {
+    setSelectedShift(clickInfo.event.extendedProps);
     setModalOpen(true);
   };
 
   const handleModalClose = () => {
     setModalOpen(false);
-    setSelectedEvent(null);
-    fetchEvents(); // Refetch events from context after modal closes
+    setSelectedShift(null);
+    fetchShifts(); // Refetch shifts from context after modal closes
   };
 
   const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  const next12Months = new Date(new Date().setMonth(today.getMonth() + 12));
 
   return (
     <>
@@ -42,23 +49,23 @@ const Calendar = () => {
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         headerToolbar={{
-          left: '',
+          left: 'prev,next today',
           center: 'title',
-          right: ''
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
         }}
         validRange={{
-          start: startOfMonth,
-          end: endOfMonth
+          start: today,
+          end: next12Months
         }}
-        events={formattedEvents}
-        eventClick={handleEventClick}
+        events={formattedShifts}
+        eventClick={handleShiftClick}
         showNonCurrentDates={false}
         fixedWeekCount={false}
       />
-      <EventModal
+      <ShiftModal
         open={modalOpen}
         handleClose={handleModalClose}
-        event={selectedEvent}
+        shift={selectedShift}
       />
     </>
   );

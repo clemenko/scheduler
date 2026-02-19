@@ -2,21 +2,28 @@ const express = require('express');
 const router = express.Router();
 const Schedule = require('../models/Schedule');
 const Shift = require('../models/Shift');
+const Vehicle = require('../models/Vehicle');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 const sendEmail = require('../utils/email');
 
 // Sign up for a shift
 router.post('/signup', auth, async (req, res) => {
   const { shiftId, vehicleId } = req.body;
   try {
-    // Check if shift is full
     const shift = await Shift.findById(shiftId);
     if (!shift) {
       return res.status(404).json({ msg: 'Shift not found' });
     }
-    const signups = await Schedule.find({ shift: shiftId });
-    if (signups.length >= shift.max_slots) {
-      return res.status(400).json({ msg: 'Shift is full' });
+
+    const vehicle = await Vehicle.findById(vehicleId);
+    if (!vehicle) {
+      return res.status(404).json({ msg: 'Vehicle not found' });
+    }
+
+    const signups = await Schedule.find({ shift: shiftId, vehicle: vehicleId });
+    if (signups.length >= vehicle.capacity) {
+      return res.status(400).json({ msg: 'This vehicle is full for this shift' });
     }
 
     // Check if user is already signed up
@@ -60,15 +67,15 @@ router.delete('/:signupId', auth, async (req, res) => {
   }
 });
 
-// ... (existing code)
-
 // Send reminders
-router.post('/send-reminders', async (req, res) => {
+router.post('/send-reminders', auth, admin, async (req, res) => {
   try {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    const schedules = await Schedule.find({ 'shift.start_time': { $gte: now, $lte: twentyFourHoursFromNow }, reminderSent: { $ne: true } }).populate('shift user');
+    const upcomingShifts = await Shift.find({ start_time: { $gte: now, $lte: twentyFourHoursFromNow } });
+    const shiftIds = upcomingShifts.map(s => s._id);
+    const schedules = await Schedule.find({ shift: { $in: shiftIds }, reminderSent: { $ne: true } }).populate('shift user');
 
     for (const schedule of schedules) {
       const emailOptions = {

@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, IconButton, Menu, MenuItem } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import Calendar from './components/Calendar';
 import TableView from './TableView';
 import PrivateRoute from './components/PrivateRoute';
@@ -9,16 +10,21 @@ import Admin from './components/Admin';
 import Register from './components/Register';
 import Login from './components/Login';
 import { AuthContext, AuthProvider } from './context/AuthContext';
-import { EventProvider } from './context/EventContext';
+import { ShiftProvider } from './context/ShiftContext';
 import axios from 'axios';
+
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 function App() {
   return (
-    <AuthProvider>
-      <EventProvider>
-        <AppContent />
-      </EventProvider>
-    </AuthProvider>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <AuthProvider>
+        <ShiftProvider>
+          <AppContent />
+        </ShiftProvider>
+      </AuthProvider>
+    </LocalizationProvider>
   );
 }
 
@@ -26,6 +32,8 @@ function AppContent() {
   const { user, logout } = useContext(AuthContext);
   const [view, setView] = useState('calendar');
   const [calendarTitle, setCalendarTitle] = useState('Fire Department Scheduler');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -44,6 +52,14 @@ function AppContent() {
     window.location.href = '/login';
   };
 
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Router>
       <div>
@@ -54,24 +70,49 @@ function AppContent() {
                 {calendarTitle}
               </Link>
             </Typography>
-            {user && (
-              <Button color="inherit" onClick={() => setView(view === 'calendar' ? 'table' : 'calendar')}>
-                {view === 'calendar' ? 'Table View' : 'Calendar View'}
-              </Button>
-            )}
             {user ? (
               <>
                 <Typography sx={{ mr: 2 }}>
                   {user.email}
                 </Typography>
-                {user.role === 'admin' && (
-                  <Button color="inherit" component={Link} to="/admin">
-                    Admin
-                  </Button>
-                )}
-                <Button color="inherit" onClick={handleLogout}>
-                  Logout
-                </Button>
+                <IconButton
+                  size="large"
+                  edge="end"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={handleMenu}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={open}
+                  onClose={handleClose}
+                >
+                  <MenuItem onClick={() => {
+                    setView(view === 'calendar' ? 'table' : 'calendar');
+                    handleClose();
+                  }}>{view === 'calendar' ? 'Table View' : 'Calendar View'}</MenuItem>
+                  {user.role === 'admin' && (
+                    <MenuItem component={Link} to="/admin" onClick={handleClose}>
+                      Admin
+                    </MenuItem>
+                  )}
+                  <MenuItem onClick={() => {
+                    handleLogout();
+                    handleClose();
+                  }}>Logout</MenuItem>
+                </Menu>
               </>
             ) : (
               <Button color="inherit" component={Link} to="/login">
