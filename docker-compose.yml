@@ -31,8 +31,6 @@ services:
       - wavfd_sched_mongo
     labels:
       - "traefik.enable=false"
-    expose:
-      - "5000"
 
   wavfd_sched_mongo:
     image: mongo:latest
