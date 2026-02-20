@@ -9,6 +9,7 @@ import PublicRoute from './components/PublicRoute';
 import Admin from './components/Admin';
 import Register from './components/Register';
 import Login from './components/Login';
+import ChangePassword from './components/ChangePassword';
 import { AuthContext, AuthProvider } from './context/AuthContext';
 import { ShiftProvider } from './context/ShiftContext';
 import axios from 'axios';
@@ -103,6 +104,9 @@ function AppContent() {
                     setView(view === 'calendar' ? 'table' : 'calendar');
                     handleClose();
                   }}>{view === 'calendar' ? 'Table View' : 'Calendar View'}</MenuItem>
+                  <MenuItem component={Link} to="/change-password" onClick={handleClose}>
+                    Change Password
+                  </MenuItem>
                   {user.role === 'admin' && (
                     <MenuItem component={Link} to="/admin" onClick={handleClose}>
                       Admin
@@ -127,6 +131,9 @@ function AppContent() {
             <Route element={<PublicRoute />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+            </Route>
+            <Route element={<PrivateRoute />}>
+              <Route path="/change-password" element={<ChangePassword />} />
             </Route>
             <Route element={<PrivateRoute requiredRole="admin" />}>
               <Route path="/admin" element={<Admin />} />

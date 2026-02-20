@@ -127,7 +127,7 @@ const UserManagement = ({ showSnackbar }) => {
                 </TableCell>
                 <TableCell>
                   <Button onClick={() => openResetModal(user)}>Reset Password</Button>
-                  <IconButton onClick={() => handleDeleteUser(user._id)} disabled={user._id === currentUser?.id}>
+                  <IconButton onClick={() => handleDeleteUser(user._id)} disabled={user._id === currentUser?.id || user.role === 'admin'}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>

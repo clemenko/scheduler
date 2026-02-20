@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, TextField, Typography, Container, Box, Alert } from '@mui/material';
 import axios from 'axios';
@@ -8,7 +8,20 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [allowRegistration, setAllowRegistration] = useState(false);
   const { login } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get('/api/settings');
+        setAllowRegistration(res.data.allowRegistration !== false);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,9 +62,11 @@ const Login = () => {
           <Button type="submit" variant="contained" color="primary">
             Login
           </Button>
-          <Button component={Link} to="/register" color="secondary">
-            Register
-          </Button>
+          {allowRegistration && (
+            <Button component={Link} to="/register" color="secondary">
+              Register
+            </Button>
+          )}
         </Box>
       </form>
     </Container>

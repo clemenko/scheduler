@@ -6,6 +6,8 @@ const Vehicle = require('../models/Vehicle');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const sendEmail = require('../utils/email');
+const AuditLog = require('../models/AuditLog');
+const User = require('../models/User');
 
 // Sign up for a shift
 router.post('/signup', auth, async (req, res) => {
@@ -39,6 +41,20 @@ router.post('/signup', auth, async (req, res) => {
     });
 
     const signup = await newSignup.save();
+
+    const actingUser = await User.findById(req.user.id);
+    await new AuditLog({
+      action: 'signup',
+      performedBy: req.user.id,
+      targetUser: req.user.id,
+      shift: shiftId,
+      vehicle: vehicleId,
+      userName: actingUser?.name,
+      shiftTitle: shift.title,
+      shiftStart: shift.start_time,
+      vehicleName: vehicle.name
+    }).save();
+
     res.json(signup);
   } catch (err) {
     console.error(err.message);
@@ -59,7 +75,25 @@ router.delete('/:signupId', auth, async (req, res) => {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
+    const populatedSignup = await Schedule.findById(req.params.signupId)
+      .populate('user', 'name')
+      .populate('shift', 'title start_time')
+      .populate('vehicle', 'name');
+
     await Schedule.deleteOne({ _id: req.params.signupId });
+
+    await new AuditLog({
+      action: 'cancel',
+      performedBy: req.user.id,
+      targetUser: populatedSignup.user?._id,
+      shift: populatedSignup.shift?._id,
+      vehicle: populatedSignup.vehicle?._id,
+      userName: populatedSignup.user?.name,
+      shiftTitle: populatedSignup.shift?.title,
+      shiftStart: populatedSignup.shift?.start_time,
+      vehicleName: populatedSignup.vehicle?.name
+    }).save();
+
     res.json({ msg: 'Signup canceled' });
   } catch (err) {
     console.error(err.message);

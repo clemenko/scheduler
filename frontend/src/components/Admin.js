@@ -4,6 +4,8 @@ import VehicleManagement from './VehicleManagement';
 import ShiftManagement from './ShiftManagement';
 import SettingsManagement from './SettingsManagement';
 import UserManagement from './UserManagement';
+import AuditLog from './AuditLog';
+import MonthlyReport from './MonthlyReport';
 import CustomSnackbar from './CustomSnackbar';
 
 function TabPanel(props) {
@@ -56,6 +58,8 @@ const Admin = () => {
           <Tab label="User Management" />
           <Tab label="Vehicles" />
           <Tab label="Shifts" />
+          <Tab label="Audit Log" />
+          <Tab label="Reports" />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -69,6 +73,12 @@ const Admin = () => {
       </TabPanel>
       <TabPanel value={value} index={3}>
         <ShiftManagement showSnackbar={showSnackbar} />
+      </TabPanel>
+      <TabPanel value={value} index={4}>
+        <AuditLog />
+      </TabPanel>
+      <TabPanel value={value} index={5}>
+        <MonthlyReport />
       </TabPanel>
       <CustomSnackbar
         open={snackbar.open}

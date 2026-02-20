@@ -12,11 +12,15 @@ const ShiftProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get('/api/shifts', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const token = localStorage.getItem('token');
+      let res;
+      if (token) {
+        res = await axios.get('/api/shifts', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } else {
+        res = await axios.get('/api/shifts/public');
+      }
       setShifts(res.data);
     } catch (err) {
       setError(err);
@@ -28,6 +32,8 @@ const ShiftProvider = ({ children }) => {
 
   useEffect(() => {
     fetchShifts();
+    const interval = setInterval(fetchShifts, 30000);
+    return () => clearInterval(interval);
   }, [fetchShifts]);
 
   return (

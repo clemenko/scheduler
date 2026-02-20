@@ -9,7 +9,18 @@ const User = require('../models/User');
 
 const Schedule = require('../models/Schedule');
 
-// Get all shifts
+// Get all shifts (public — no details)
+router.get('/public', async (req, res) => {
+  try {
+    const shifts = await Shift.find({}, 'title start_time end_time').lean();
+    res.json(shifts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Get all shifts (authenticated — full details)
 router.get('/', auth, async (req, res) => {
   try {
     const shifts = await Shift.find().populate('creator', 'name').lean();

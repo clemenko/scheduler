@@ -24,7 +24,7 @@ services:
     environment:
       - ADMIN_PASSWORD=Pa22word
       - ADMIN_EMAIL=admin@wavfd.org
-      - CALENDAR_TITLE=WAVFD Scheduler
+      - CALENDAR_TITLE=Demo WAVFD Scheduler
       - JWT_SECRET=your_super_secret_jwt_secret_change_me
     command: sh -c "node seed.js && npm start"
     depends_on:

@@ -26,7 +26,7 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 500,
+  width: { xs: '95%', sm: 500 },
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
@@ -142,6 +142,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
       handleClose();
     } catch (err) {
       console.error(err);
+      setFormError(err.response?.data?.msg || 'An error occurred while saving the shift.');
     }
   };
 
@@ -149,7 +150,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
     <Modal open={open} onClose={handleClose}>
       <Box sx={style}>
         <Typography variant="h6" component="h2">
-          {currentShift ? 'Edit Shift' : 'Add Shift'}
+          {currentShift ? (isRecurring ? 'Edit Shift Series' : 'Edit Shift') : 'Add Shift'}
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField label="Title" fullWidth margin="normal" value={title} onChange={(e) => setTitle(e.target.value)} required />

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import axios from 'axios';
+import { ShiftContext } from './context/ShiftContext';
 
 // Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
 const fromNaiveUTC = (value) => {
@@ -11,19 +11,7 @@ const fromNaiveUTC = (value) => {
 };
 
 const TableView = () => {
-  const [shifts, setShifts] = useState([]);
-
-  useEffect(() => {
-    const fetchShifts = async () => {
-      try {
-        const res = await axios.get('/api/shifts');
-        setShifts(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchShifts();
-  }, []);
+  const { shifts } = useContext(ShiftContext);
 
   return (
     <TableContainer component={Paper}>

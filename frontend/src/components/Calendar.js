@@ -5,6 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import ShiftModal from './ShiftModal';
 import { ShiftContext } from '../context/ShiftContext';
+import { AuthContext } from '../context/AuthContext';
 
 // Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
 const fromNaiveUTC = (value) => {
@@ -16,6 +17,7 @@ const fromNaiveUTC = (value) => {
 
 const Calendar = () => {
   const { shifts, fetchShifts } = useContext(ShiftContext);
+  const { user } = useContext(AuthContext);
   const [selectedShift, setSelectedShift] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -30,6 +32,7 @@ const Calendar = () => {
   })), [shifts]);
 
   const handleShiftClick = (clickInfo) => {
+    if (!user) return;
     setSelectedShift(clickInfo.event.extendedProps);
     setModalOpen(true);
   };
@@ -40,9 +43,6 @@ const Calendar = () => {
     fetchShifts(); // Refetch shifts from context after modal closes
   };
 
-  const today = new Date();
-  const next12Months = new Date(new Date().setMonth(today.getMonth() + 12));
-
   return (
     <>
       <FullCalendar
@@ -52,10 +52,6 @@ const Calendar = () => {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        }}
-        validRange={{
-          start: today,
-          end: next12Months
         }}
         events={formattedShifts}
         eventClick={handleShiftClick}
