@@ -92,6 +92,47 @@ mongoose.connect('mongodb://wavfd_sched_mongo:27017/scheduler', { useNewUrlParse
     });
     console.log('Weekly reminder cron scheduled (Sunday 8 PM)');
 
+    // Daily shift reminder cron — 6 AM every day
+    cron.schedule('0 6 * * *', async () => {
+      console.log('Running daily shift reminder...');
+      try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const todaysShifts = await Shift.find({
+          start_time: { $gte: startOfDay, $lte: endOfDay }
+        });
+        const shiftIds = todaysShifts.map(s => s._id);
+
+        const schedules = await Schedule.find({
+          shift: { $in: shiftIds },
+          reminderSent: { $ne: true }
+        }).populate('shift user vehicle');
+
+        for (const schedule of schedules) {
+          if (!schedule.user || !schedule.user.email) continue;
+          const startTime = new Date(schedule.shift.start_time).toLocaleTimeString('en-US', {
+            hour: 'numeric', minute: '2-digit'
+          });
+          const vehicle = schedule.vehicle ? ` on ${schedule.vehicle.name}` : '';
+          await sendEmail({
+            email: schedule.user.email,
+            subject: 'Shift Reminder — Today',
+            message: `Hi ${schedule.user.name},\n\nReminder: you have a shift today.\n\n  • ${schedule.shift.title} at ${startTime}${vehicle}\n\nThanks!`
+          });
+          schedule.reminderSent = true;
+          await schedule.save();
+        }
+
+        console.log(`Daily reminders sent for ${schedules.length} schedule(s)`);
+      } catch (err) {
+        console.error('Daily reminder error:', err.message);
+      }
+    });
+    console.log('Daily shift reminder cron scheduled (6 AM)');
+
     app.listen(port, () => {
       console.log(`Backend listening at http://localhost:${port}`);
     });

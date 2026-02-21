@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, TextField, Button, Box, FormControlLabel, Switch } from '@mui/material';
+import { Typography, TextField, Button, Box, FormControlLabel, Switch, Divider, CircularProgress } from '@mui/material';
 import axios from 'axios';
 
 const SettingsManagement = ({ showSnackbar }) => {
@@ -7,6 +7,8 @@ const SettingsManagement = ({ showSnackbar }) => {
   const [allowRegistration, setAllowRegistration] = useState(true);
   const [headerColor, setHeaderColor] = useState('#1976d2');
   const [logoUrl, setLogoUrl] = useState('');
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -87,6 +89,45 @@ const SettingsManagement = ({ showSnackbar }) => {
       <Button variant="contained" color="primary" onClick={handleSave}>
         Save Settings
       </Button>
+
+      <Divider sx={{ my: 4 }} />
+
+      <Typography variant="h6" gutterBottom>
+        Test Email
+      </Typography>
+      <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+        Send a test email to verify SMTP is configured correctly.
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+        <TextField
+          label="Recipient Email"
+          size="small"
+          value={testEmail}
+          onChange={(e) => setTestEmail(e.target.value)}
+          placeholder="you@example.com"
+          sx={{ minWidth: 280 }}
+        />
+        <Button
+          variant="outlined"
+          disabled={!testEmail || sendingTest}
+          onClick={async () => {
+            setSendingTest(true);
+            try {
+              await axios.post('/api/settings/test-email', { email: testEmail }, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+              });
+              showSnackbar('Test email sent!', 'success');
+            } catch (err) {
+              const msg = err.response?.data?.msg || 'Failed to send test email';
+              showSnackbar(msg, 'error');
+            } finally {
+              setSendingTest(false);
+            }
+          }}
+        >
+          {sendingTest ? <CircularProgress size={20} /> : 'Send Test'}
+        </Button>
+      </Box>
     </Box>
   );
 };

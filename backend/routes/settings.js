@@ -3,6 +3,7 @@ const router = express.Router();
 const Setting = require('../models/Setting');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
+const sendEmail = require('../utils/email');
 
 // Get settings
 router.get('/', async (req, res) => {
@@ -43,6 +44,25 @@ router.put('/', auth, admin, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// Send test email
+router.post('/test-email', auth, admin, async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ msg: 'Email address is required' });
+  }
+  try {
+    await sendEmail({
+      email,
+      subject: 'WAVFD Scheduler — Test Email',
+      message: 'This is a test email from the WAVFD Scheduler. If you received this, email is configured correctly!'
+    });
+    res.json({ msg: 'Test email sent successfully' });
+  } catch (err) {
+    console.error('Test email error:', err.message);
+    res.status(500).json({ msg: `Failed to send test email: ${err.message}` });
   }
 });
 
