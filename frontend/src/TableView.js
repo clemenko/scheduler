@@ -1,21 +1,14 @@
 import React, { useContext } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { ShiftContext } from './context/ShiftContext';
-
-// Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC } from './utils/dateUtils';
 
 const TableView = () => {
   const { shifts } = useContext(ShiftContext);
 
   return (
     <TableContainer component={Paper}>
-      <Table>
+      <Table size="small">
         <TableHead>
           <TableRow>
             <TableCell>Title</TableCell>

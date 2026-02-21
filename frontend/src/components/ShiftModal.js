@@ -2,14 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Modal, Box, Typography, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-
-// Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC } from '../utils/dateUtils';
 
 const style = {
   position: 'absolute',
@@ -25,7 +18,7 @@ const style = {
   overflowY: 'auto',
 };
 
-const ShiftModal = ({ open, handleClose, shift }) => {
+const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
   const { user } = useContext(AuthContext);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState('');
@@ -61,6 +54,23 @@ const ShiftModal = ({ open, handleClose, shift }) => {
     }
   };
 
+  const canManageShift = user && shift && (user.role === 'admin' || (shift.creator && (shift.creator._id === user.id || shift.creator === user.id)));
+
+  const handleDeleteShift = async () => {
+    try {
+      const url = shift.isRecurring
+        ? `/api/shifts/series/${shift.parentShift || shift._id}`
+        : `/api/shifts/${shift._id}`;
+      await axios.delete(url, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      handleClose();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.msg || 'Error deleting shift.');
+    }
+  };
+
   const handleDeleteSignup = async (signupId) => {
     try {
       await axios.delete(`/api/schedule/${signupId}`, {
@@ -79,9 +89,17 @@ const ShiftModal = ({ open, handleClose, shift }) => {
   return (
     <Modal open={open} onClose={handleClose}>
       <Box sx={style}>
-        <Typography variant="h6" component="h2">
-          {shift?.title}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="h2">
+            {shift?.title}
+          </Typography>
+          {canManageShift && (
+            <Box>
+              {onEdit && <Button size="small" onClick={() => onEdit(shift)}>Edit</Button>}
+              <Button size="small" color="error" onClick={handleDeleteShift}>Delete</Button>
+            </Box>
+          )}
+        </Box>
         <Typography sx={{ mt: 2 }}>
           {fromNaiveUTC(shift?.start_time)?.toLocaleString()} - {fromNaiveUTC(shift?.end_time)?.toLocaleString()}
         </Typography>
@@ -104,19 +122,28 @@ const ShiftModal = ({ open, handleClose, shift }) => {
             No one has signed up for this shift yet.
           </Typography>
         )}
-        <FormControl fullWidth sx={{ mt: 2 }}>
-          <InputLabel>Vehicle</InputLabel>
-          <Select
-            value={selectedVehicle}
-            label="Vehicle"
-            onChange={(e) => setSelectedVehicle(e.target.value)}
-          >
-            {vehicles.map(vehicle => (
-              <MenuItem key={vehicle._id} value={vehicle._id}>{vehicle.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Button onClick={handleSignUp} sx={{ mt: 2 }}>Sign Up</Button>
+        {user?.role !== 'viewer' && (
+          <>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel>Vehicle</InputLabel>
+              <Select
+                value={selectedVehicle}
+                label="Vehicle"
+                onChange={(e) => setSelectedVehicle(e.target.value)}
+              >
+                {vehicles.map(vehicle => (
+                  <MenuItem key={vehicle._id} value={vehicle._id}>{vehicle.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button onClick={handleSignUp} sx={{ mt: 2 }}>Sign Up</Button>
+          </>
+        )}
+        {shift?.creator?.name && (
+          <Typography variant="body2" sx={{ mt: 2, fontStyle: 'italic', color: 'text.secondary' }}>
+            Created by {shift.creator.name}
+          </Typography>
+        )}
       </Box>
     </Modal>
   );

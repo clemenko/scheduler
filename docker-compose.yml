@@ -22,10 +22,10 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
     environment:
-      - ADMIN_PASSWORD=Pa22word
-      - ADMIN_EMAIL=admin@wavfd.org
-      - CALENDAR_TITLE=Demo WAVFD Scheduler
-      - JWT_SECRET=your_super_secret_jwt_secret_change_me
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Pa22word}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@wavfd.org}
+      - CALENDAR_TITLE=${CALENDAR_TITLE:-Demo WAVFD Scheduler}
+      - JWT_SECRET=${JWT_SECRET:-your_super_secret_jwt_secret_change_me}
     command: sh -c "node seed.js && npm start"
     depends_on:
       - wavfd_sched_mongo

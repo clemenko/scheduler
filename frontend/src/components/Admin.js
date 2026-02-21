@@ -20,7 +20,7 @@ function TabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: { xs: 1, sm: 3 } }}>
           {children}
         </Box>
       )}
@@ -53,9 +53,9 @@ const Admin = () => {
         Admin Dashboard
       </Typography>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="admin tabs">
+        <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto" aria-label="admin tabs">
           <Tab label="Settings" />
-          <Tab label="User Management" />
+          <Tab label="Users" />
           <Tab label="Vehicles" />
           <Tab label="Shifts" />
           <Tab label="Audit Log" />

@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 
 // Update settings
 router.put('/', auth, admin, async (req, res) => {
-  const { calendarTitle, allowRegistration } = req.body;
+  const { calendarTitle, allowRegistration, headerColor, logoUrl } = req.body;
   try {
     let settings = await Setting.findOne();
     if (!settings) {
@@ -31,6 +31,12 @@ router.put('/', auth, admin, async (req, res) => {
     settings.calendarTitle = calendarTitle;
     if (typeof allowRegistration === 'boolean') {
       settings.allowRegistration = allowRegistration;
+    }
+    if (headerColor) {
+      settings.headerColor = headerColor;
+    }
+    if (typeof logoUrl === 'string') {
+      settings.logoUrl = logoUrl;
     }
     await settings.save();
     res.json(settings);

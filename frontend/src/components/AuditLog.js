@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
 import axios from 'axios';
-
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC } from '../utils/dateUtils';
 
 const AuditLog = () => {
   const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const res = await axios.get('/api/auditlog', {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         setLogs(res.data);
       } catch (err) {
+        setError('Failed to load audit logs');
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchLogs();
@@ -53,8 +54,9 @@ const AuditLog = () => {
       <Button variant="contained" color="primary" onClick={handleDownload} sx={{ mb: 2 }}>
         Download CSV
       </Button>
-      <TableContainer component={Paper}>
-        <Table>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {loading ? <CircularProgress /> : <TableContainer component={Paper}>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Timestamp</TableCell>
@@ -80,7 +82,7 @@ const AuditLog = () => {
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </TableContainer>}
     </Box>
   );
 };

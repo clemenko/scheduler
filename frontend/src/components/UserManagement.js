@@ -60,8 +60,8 @@ const UserManagement = ({ showSnackbar }) => {
       fetchUsers();
       showSnackbar('User deleted successfully.', 'success');
     } catch (err) {
-      console.error(err.response.data.msg || err);
-      showSnackbar(err.response.data.msg || 'Error deleting user.', 'error');
+      console.error(err.response?.data?.msg || err);
+      showSnackbar(err.response?.data?.msg || 'Error deleting user.', 'error');
     }
   };
 
@@ -72,8 +72,8 @@ const UserManagement = ({ showSnackbar }) => {
       setUserFormModalOpen(false);
       showSnackbar('User added successfully.', 'success');
     } catch (err) {
-      console.error(err.response.data.msg || err);
-      showSnackbar(err.response.data.msg || 'Error adding user.', 'error');
+      console.error(err.response?.data?.msg || err);
+      showSnackbar(err.response?.data?.msg || 'Error adding user.', 'error');
     }
   };
 
@@ -85,21 +85,21 @@ const UserManagement = ({ showSnackbar }) => {
       setUsers(users.map(u => u._id === userId ? res.data : u));
       showSnackbar('User role updated successfully.', 'success');
     } catch (err) {
-      console.error(err.response.data.msg || err);
-      showSnackbar(err.response.data.msg || 'Error updating user role.', 'error');
+      console.error(err.response?.data?.msg || err);
+      showSnackbar(err.response?.data?.msg || 'Error updating user role.', 'error');
     }
   };
 
   return (
     <Box>
       <Typography variant="h5" component="h2" gutterBottom>
-        User Management
+        Users
       </Typography>
       <Button variant="contained" color="primary" onClick={() => setUserFormModalOpen(true)}>
         Add User
       </Button>
       <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -121,6 +121,7 @@ const UserManagement = ({ showSnackbar }) => {
                       disabled={user._id === currentUser?.id}
                     >
                       <MenuItem value="viewer">Viewer</MenuItem>
+                      <MenuItem value="regular">Regular</MenuItem>
                       <MenuItem value="admin">Admin</MenuItem>
                     </Select>
                   </FormControl>

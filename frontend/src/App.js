@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Container, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Calendar from './components/Calendar';
@@ -10,6 +10,7 @@ import Admin from './components/Admin';
 import Register from './components/Register';
 import Login from './components/Login';
 import ChangePassword from './components/ChangePassword';
+import MyShifts from './components/MyShifts';
 import { AuthContext, AuthProvider } from './context/AuthContext';
 import { ShiftProvider } from './context/ShiftContext';
 import axios from 'axios';
@@ -20,11 +21,13 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 function App() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <AuthProvider>
-        <ShiftProvider>
-          <AppContent />
-        </ShiftProvider>
-      </AuthProvider>
+      <Router>
+        <AuthProvider>
+          <ShiftProvider>
+            <AppContent />
+          </ShiftProvider>
+        </AuthProvider>
+      </Router>
     </LocalizationProvider>
   );
 }
@@ -33,14 +36,20 @@ function AppContent() {
   const { user, logout } = useContext(AuthContext);
   const [view, setView] = useState('calendar');
   const [calendarTitle, setCalendarTitle] = useState('Fire Department Scheduler');
+  const [headerColor, setHeaderColor] = useState('#1976d2');
+  const [logoUrl, setLogoUrl] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const res = await axios.get('/api/settings');
         setCalendarTitle(res.data.calendarTitle);
+        if (res.data.headerColor) setHeaderColor(res.data.headerColor);
+        if (res.data.logoUrl) setLogoUrl(res.data.logoUrl);
       } catch (err) {
         console.error(err);
       }
@@ -62,18 +71,22 @@ function AppContent() {
   };
 
   return (
-    <Router>
       <div>
-        <AppBar position="static">
+        <AppBar position="static" sx={{ backgroundColor: headerColor }}>
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {logoUrl && (
+              <Link to="/" style={{ display: 'flex', alignItems: 'center', marginRight: 12 }}>
+                <img src={logoUrl} alt="Logo" style={{ maxHeight: 40, maxWidth: 40 }} />
+              </Link>
+            )}
+            <Typography variant="h6" component="div" noWrap sx={{ flexGrow: 1 }}>
               <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
                 {calendarTitle}
               </Link>
             </Typography>
             {user ? (
               <>
-                <Typography sx={{ mr: 2 }}>
+                <Typography sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
                   {user.email}
                 </Typography>
                 <IconButton
@@ -100,10 +113,25 @@ function AppContent() {
                   open={open}
                   onClose={handleClose}
                 >
-                  <MenuItem onClick={() => {
-                    setView(view === 'calendar' ? 'table' : 'calendar');
-                    handleClose();
-                  }}>{view === 'calendar' ? 'Table View' : 'Calendar View'}</MenuItem>
+                  <MenuItem
+                    disabled={location.pathname === '/' && view === 'calendar'}
+                    onClick={() => {
+                      setView('calendar');
+                      navigate('/');
+                      handleClose();
+                    }}
+                  >Calendar View</MenuItem>
+                  <MenuItem
+                    disabled={location.pathname === '/' && view === 'table'}
+                    onClick={() => {
+                      setView('table');
+                      navigate('/');
+                      handleClose();
+                    }}
+                  >Table View</MenuItem>
+                  <MenuItem component={Link} to="/my-shifts" onClick={handleClose}>
+                    My Shifts
+                  </MenuItem>
                   <MenuItem component={Link} to="/change-password" onClick={handleClose}>
                     Change Password
                   </MenuItem>
@@ -133,6 +161,7 @@ function AppContent() {
               <Route path="/register" element={<Register />} />
             </Route>
             <Route element={<PrivateRoute />}>
+              <Route path="/my-shifts" element={<MyShifts />} />
               <Route path="/change-password" element={<ChangePassword />} />
             </Route>
             <Route element={<PrivateRoute requiredRole="admin" />}>
@@ -141,7 +170,6 @@ function AppContent() {
           </Routes>
         </Container>
       </div>
-    </Router>
   );
 }
 

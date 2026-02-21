@@ -3,23 +3,20 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { Button, Box } from '@mui/material';
 import ShiftModal from './ShiftModal';
+import ShiftFormModal from './ShiftFormModal';
 import { ShiftContext } from '../context/ShiftContext';
 import { AuthContext } from '../context/AuthContext';
-
-// Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC } from '../utils/dateUtils';
 
 const Calendar = () => {
   const { shifts, fetchShifts } = useContext(ShiftContext);
   const { user } = useContext(AuthContext);
   const [selectedShift, setSelectedShift] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [editShift, setEditShift] = useState(null);
 
   const formattedShifts = useMemo(() => shifts.map(shift => ({
     title: shift.title,
@@ -40,18 +37,44 @@ const Calendar = () => {
   const handleModalClose = () => {
     setModalOpen(false);
     setSelectedShift(null);
-    fetchShifts(); // Refetch shifts from context after modal closes
+    fetchShifts();
+  };
+
+  const handleCreateShift = () => {
+    setEditShift(null);
+    setFormModalOpen(true);
+  };
+
+  const handleEditShift = (shift) => {
+    setSelectedShift(null);
+    setModalOpen(false);
+    setEditShift(shift);
+    setFormModalOpen(true);
+  };
+
+  const handleFormModalClose = () => {
+    setFormModalOpen(false);
+    setEditShift(null);
+    fetchShifts();
   };
 
   return (
     <>
+      {user && user.role !== 'viewer' && (
+        <Box sx={{ mb: 2 }}>
+          <Button variant="contained" color="primary" onClick={handleCreateShift}>
+            Add Shift
+          </Button>
+        </Box>
+      )}
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
+        height="auto"
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          right: 'dayGridMonth,timeGridWeek'
         }}
         events={formattedShifts}
         eventClick={handleShiftClick}
@@ -62,6 +85,13 @@ const Calendar = () => {
         open={modalOpen}
         handleClose={handleModalClose}
         shift={selectedShift}
+        onEdit={handleEditShift}
+      />
+      <ShiftFormModal
+        open={formModalOpen}
+        handleClose={handleFormModalClose}
+        currentShift={editShift}
+        onSave={fetchShifts}
       />
     </>
   );

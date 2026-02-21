@@ -9,6 +9,17 @@ const auth = require('../middleware/auth');
 // Register
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ msg: 'Name is required' });
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ msg: 'A valid email is required' });
+  }
+  if (!password || password.length < 8) {
+    return res.status(400).json({ msg: 'Password must be at least 8 characters' });
+  }
+
   try {
     const settings = await Setting.findOne();
     if (settings && settings.allowRegistration === false) {
@@ -52,6 +63,11 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ msg: 'Email and password are required' });
+  }
+
   try {
     let user = await User.findOne({ email });
     if (!user) {
@@ -87,6 +103,14 @@ router.post('/login', async (req, res) => {
 // Change password (self-service)
 router.put('/change-password', auth, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ msg: 'Current and new passwords are required' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ msg: 'New password must be at least 8 characters' });
+  }
+
   try {
     const user = await User.findById(req.user.id);
     if (!user) {

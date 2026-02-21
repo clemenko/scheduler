@@ -17,6 +17,10 @@ const ScheduleSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   }
-});
+}, { timestamps: true });
+
+ScheduleSchema.index({ shift: 1, user: 1 });
+ScheduleSchema.index({ user: 1 });
+ScheduleSchema.index({ shift: 1, vehicle: 1 });
 
 module.exports = mongoose.model('Schedule', ScheduleSchema);

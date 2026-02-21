@@ -66,4 +66,6 @@ const ShiftSchema = new mongoose.Schema({
   }
 });
 
+ShiftSchema.index({ start_time: 1 });
+
 module.exports = mongoose.model('Shift', ShiftSchema);

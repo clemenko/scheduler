@@ -2,24 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Box, Typography, Button, TextField, Checkbox, FormControlLabel, Select, MenuItem, InputLabel, FormControl, FormGroup } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import axios from 'axios';
-
-// Convert a local Date to naive UTC (store local wall-clock time as if it were UTC)
-const toNaiveUTC = (date) => {
-  if (!date) return null;
-  const d = new Date(date);
-  return new Date(Date.UTC(
-    d.getFullYear(), d.getMonth(), d.getDate(),
-    d.getHours(), d.getMinutes(), d.getSeconds()
-  ));
-};
-
-// Convert a naive UTC value back to a local Date for display/editing
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC, toNaiveUTC } from '../utils/dateUtils';
 
 const style = {
   position: 'absolute',

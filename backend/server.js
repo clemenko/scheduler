@@ -2,11 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const cors = require('cors');
 
 const app = express();
 const port = 5000;
 
 // Middleware
+app.use(helmet());
+app.use(cors());
 app.use(express.json());
 
 // Rate limiter for auth routes

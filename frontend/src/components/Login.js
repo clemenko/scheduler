@@ -31,7 +31,7 @@ const Login = () => {
       login(res.data.token);
       window.location.href = '/';
     } catch (err) {
-      setError(err.response.data.msg || 'Something went wrong');
+      setError(err.response?.data?.msg || 'Something went wrong');
     }
   };
 

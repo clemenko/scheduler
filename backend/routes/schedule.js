@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Schedule = require('../models/Schedule');
 const Shift = require('../models/Shift');
 const Vehicle = require('../models/Vehicle');
@@ -9,9 +10,52 @@ const sendEmail = require('../utils/email');
 const AuditLog = require('../models/AuditLog');
 const User = require('../models/User');
 
-// Sign up for a shift
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// Get my upcoming shifts
+router.get('/my-shifts', auth, async (req, res) => {
+  try {
+    const range = req.query.range || 'week';
+    const now = new Date();
+    const end = new Date(now);
+    if (range === 'month') {
+      end.setDate(end.getDate() + 30);
+    } else {
+      end.setDate(end.getDate() + 7);
+    }
+
+    const upcomingShifts = await Shift.find({
+      start_time: { $gte: now, $lte: end }
+    }).select('_id').lean();
+
+    const shiftIds = upcomingShifts.map(s => s._id);
+
+    const mySignups = await Schedule.find({
+      user: req.user.id,
+      shift: { $in: shiftIds }
+    })
+      .populate('shift', 'title start_time end_time')
+      .populate('vehicle', 'name')
+      .lean();
+
+    mySignups.sort((a, b) => new Date(a.shift?.start_time) - new Date(b.shift?.start_time));
+
+    res.json(mySignups);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Sign up for a shift (regular and admin only)
 router.post('/signup', auth, async (req, res) => {
+  if (req.user.role === 'viewer') {
+    return res.status(403).json({ msg: 'Viewers cannot sign up for shifts' });
+  }
   const { shiftId, vehicleId } = req.body;
+  if (!isValidId(shiftId) || !isValidId(vehicleId)) {
+    return res.status(400).json({ msg: 'Invalid shift or vehicle ID' });
+  }
   try {
     const shift = await Shift.findById(shiftId);
     if (!shift) {
@@ -64,34 +108,35 @@ router.post('/signup', auth, async (req, res) => {
 
 // Cancel a signup
 router.delete('/:signupId', auth, async (req, res) => {
+  if (!isValidId(req.params.signupId)) {
+    return res.status(400).json({ msg: 'Invalid signup ID' });
+  }
   try {
-    const signup = await Schedule.findById(req.params.signupId);
+    const signup = await Schedule.findById(req.params.signupId)
+      .populate('user', 'name')
+      .populate('shift', 'title start_time')
+      .populate('vehicle', 'name');
     if (!signup) {
       return res.status(404).json({ msg: 'Signup not found' });
     }
 
     // Check if user is the creator or an admin
-    if (signup.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    if (signup.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ msg: 'Not authorized' });
     }
-
-    const populatedSignup = await Schedule.findById(req.params.signupId)
-      .populate('user', 'name')
-      .populate('shift', 'title start_time')
-      .populate('vehicle', 'name');
 
     await Schedule.deleteOne({ _id: req.params.signupId });
 
     await new AuditLog({
       action: 'cancel',
       performedBy: req.user.id,
-      targetUser: populatedSignup.user?._id,
-      shift: populatedSignup.shift?._id,
-      vehicle: populatedSignup.vehicle?._id,
-      userName: populatedSignup.user?.name,
-      shiftTitle: populatedSignup.shift?.title,
-      shiftStart: populatedSignup.shift?.start_time,
-      vehicleName: populatedSignup.vehicle?.name
+      targetUser: signup.user?._id,
+      shift: signup.shift?._id,
+      vehicle: signup.vehicle?._id,
+      userName: signup.user?.name,
+      shiftTitle: signup.shift?.title,
+      shiftStart: signup.shift?.start_time,
+      vehicleName: signup.vehicle?.name
     }).save();
 
     res.json({ msg: 'Signup canceled' });

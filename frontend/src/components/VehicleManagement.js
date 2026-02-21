@@ -61,7 +61,7 @@ const VehicleManagement = () => {
         Add Vehicle
       </Button>
       <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>

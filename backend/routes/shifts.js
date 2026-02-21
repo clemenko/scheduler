@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Shift = require('../models/Shift');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
@@ -8,6 +9,8 @@ const sendEmail = require('../utils/email');
 const User = require('../models/User');
 
 const Schedule = require('../models/Schedule');
+
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Get all shifts (public — no details)
 router.get('/public', async (req, res) => {
@@ -24,6 +27,19 @@ router.get('/public', async (req, res) => {
 router.get('/', auth, async (req, res) => {
   try {
     const shifts = await Shift.find().populate('creator', 'name').lean();
+    const shiftIds = shifts.map(s => s._id);
+    const allSignups = await Schedule.find({ shift: { $in: shiftIds } })
+      .populate('user', 'name _id')
+      .populate('vehicle', 'name')
+      .lean();
+
+    const signupsByShift = {};
+    for (const signup of allSignups) {
+      const key = signup.shift.toString();
+      if (!signupsByShift[key]) signupsByShift[key] = [];
+      signupsByShift[key].push(signup);
+    }
+
     for (const shift of shifts) {
       if (shift.isRecurring && !shift.recurrenceRule) {
         shift.recurrenceRule = {
@@ -32,8 +48,7 @@ router.get('/', auth, async (req, res) => {
           endDate: shift.recurringEndDate || new Date()
         };
       }
-      const signups = await Schedule.find({ shift: shift._id }).populate('user', 'name _id').populate('vehicle', 'name');
-      shift.signups = signups;
+      shift.signups = signupsByShift[shift._id.toString()] || [];
     }
     res.json(shifts);
   } catch (err) {
@@ -44,8 +59,11 @@ router.get('/', auth, async (req, res) => {
 
 const { RRule } = require('rrule');
 
-// Create a shift
-router.post('/', auth, admin, async (req, res) => {
+// Create a shift (regular and admin)
+router.post('/', auth, async (req, res) => {
+  if (req.user.role === 'viewer') {
+    return res.status(403).json({ msg: 'Viewers cannot create shifts' });
+  }
   const { title, start_time, end_time, isRecurring, recurrenceRule, exclusions = [] } = req.body;
   try {
     if (isRecurring) {
@@ -117,18 +135,27 @@ router.post('/', auth, admin, async (req, res) => {
 
   } catch (err) {
     console.error('Error creating shift:', err);
-    res.status(500).json({ msg: 'Server error', error: err.message });
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
-// Update a single shift
-router.put('/:id', auth, admin, async (req, res) => {
+// Update a single shift (creator or admin)
+router.put('/:id', auth, async (req, res) => {
+    if (req.user.role === 'viewer') {
+      return res.status(403).json({ msg: 'Viewers cannot edit shifts' });
+    }
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ msg: 'Invalid shift ID' });
+    }
     try {
         const { title, start_time, end_time } = req.body;
         let shift = await Shift.findById(req.params.id);
 
         if (!shift) {
             return res.status(404).json({ msg: 'Shift not found' });
+        }
+        if (req.user.role !== 'admin' && shift.creator.toString() !== req.user.id) {
+            return res.status(403).json({ msg: 'You can only edit your own shifts' });
         }
         if (shift.isRecurring) {
             return res.status(400).json({ msg: 'This is a recurring shift. Please update the entire series.' });
@@ -148,13 +175,22 @@ router.put('/:id', auth, admin, async (req, res) => {
 });
 
 
-// Update a recurring shift series
-router.put('/series/:id', auth, admin, async (req, res) => {
+// Update a recurring shift series (creator or admin)
+router.put('/series/:id', auth, async (req, res) => {
+    if (req.user.role === 'viewer') {
+      return res.status(403).json({ msg: 'Viewers cannot edit shifts' });
+    }
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ msg: 'Invalid shift ID' });
+    }
     const { title, start_time, end_time, recurrenceRule, exclusions = [] } = req.body;
     try {
       let parentShift = await Shift.findById(req.params.id);
       if (!parentShift) {
         return res.status(404).json({ msg: 'Shift series not found' });
+      }
+      if (req.user.role !== 'admin' && parentShift.creator.toString() !== req.user.id) {
+        return res.status(403).json({ msg: 'You can only edit your own shifts' });
       }
   
       // Delete old series
@@ -215,12 +251,22 @@ router.put('/series/:id', auth, admin, async (req, res) => {
     }
   });
 
-// Delete a shift
-router.delete('/:id', auth, admin, async (req, res) => {
+// Delete a shift (creator or admin)
+router.delete('/:id', auth, async (req, res) => {
+  if (req.user.role === 'viewer') {
+    return res.status(403).json({ msg: 'Viewers cannot delete shifts' });
+  }
+  if (!isValidId(req.params.id)) {
+    return res.status(400).json({ msg: 'Invalid shift ID' });
+  }
   try {
     let shift = await Shift.findById(req.params.id);
     if (!shift) {
       return res.status(404).json({ msg: 'Shift not found' });
+    }
+
+    if (req.user.role !== 'admin' && shift.creator.toString() !== req.user.id) {
+      return res.status(403).json({ msg: 'You can only delete your own shifts' });
     }
 
     if (shift.isRecurring) {
@@ -235,12 +281,22 @@ router.delete('/:id', auth, admin, async (req, res) => {
   }
 });
 
-// Delete a recurring shift series
-router.delete('/series/:id', auth, admin, async (req, res) => {
+// Delete a recurring shift series (creator or admin)
+router.delete('/series/:id', auth, async (req, res) => {
+    if (req.user.role === 'viewer') {
+      return res.status(403).json({ msg: 'Viewers cannot delete shifts' });
+    }
+    if (!isValidId(req.params.id)) {
+      return res.status(400).json({ msg: 'Invalid shift ID' });
+    }
     try {
       let shift = await Shift.findById(req.params.id);
       if (!shift) {
         return res.status(404).json({ msg: 'Shift series not found' });
+      }
+
+      if (req.user.role !== 'admin' && shift.creator.toString() !== req.user.id) {
+        return res.status(403).json({ msg: 'You can only delete your own shifts' });
       }
 
       const parentId = shift.parentShift || shift._id;

@@ -8,6 +8,14 @@ const SettingSchema = new mongoose.Schema({
   allowRegistration: {
     type: Boolean,
     default: true
+  },
+  headerColor: {
+    type: String,
+    default: '#1976d2'
+  },
+  logoUrl: {
+    type: String,
+    default: ''
   }
 });
 

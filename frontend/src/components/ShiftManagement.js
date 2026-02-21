@@ -3,14 +3,7 @@ import { Typography, Button, Table, TableBody, TableCell, TableContainer, TableH
 import axios from 'axios';
 import ShiftFormModal from './ShiftFormModal';
 import { ShiftContext } from '../context/ShiftContext';
-
-// Convert naive UTC (local wall-clock stored as UTC) back to a local Date for display
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC } from '../utils/dateUtils';
 
 const ShiftManagement = () => {
   const { shifts, fetchShifts } = useContext(ShiftContext);
@@ -83,7 +76,7 @@ const ShiftManagement = () => {
         Add Shift
       </Button>
       <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>

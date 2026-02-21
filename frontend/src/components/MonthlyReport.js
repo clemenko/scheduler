@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Card, CardContent, Grid } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import axios from 'axios';
-
-const fromNaiveUTC = (value) => {
-  if (!value) return null;
-  const d = new Date(value);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
-    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
-};
+import { fromNaiveUTC } from '../utils/dateUtils';
 
 const MonthlyReport = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -57,7 +51,7 @@ const MonthlyReport = () => {
       <Typography variant="h5" component="h2" gutterBottom>
         Monthly Report
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <DatePicker
           label="Select Month"
           views={['year', 'month']}
@@ -113,7 +107,7 @@ const MonthlyReport = () => {
           </Grid>
 
           <TableContainer component={Paper}>
-            <Table>
+            <Table size="small">
               <TableHead>
                 <TableRow>
                   <TableCell>Shift Title</TableCell>
