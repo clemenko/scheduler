@@ -1,4 +1,4 @@
 # Todo — WAVFD Scheduler
 
-- [ ] Email capability — `sendEmail` util and `/send-reminders` route exist; query fixed, still needs SMTP config wired up
-- [ ] email capability needs to be able to send a weekly reminder sunday night for upcoming shifts.
+- [x] Email capability — `sendEmail` util wired to SMTP via nodemailer (falls back to console.log when SMTP not configured)
+- [x] Weekly reminder — node-cron job runs Sunday 8 PM, emails users their upcoming week's shifts

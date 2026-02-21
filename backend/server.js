@@ -4,6 +4,10 @@ const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cors = require('cors');
+const cron = require('node-cron');
+const sendEmail = require('./utils/email');
+const Shift = require('./models/Shift');
+const Schedule = require('./models/Schedule');
 
 const app = express();
 const port = 5000;
@@ -39,6 +43,55 @@ app.use('/api/reports', require('./routes/reports'));
 mongoose.connect('mongodb://wavfd_sched_mongo:27017/scheduler', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('MongoDB connected');
+
+    // Weekly reminder cron — Sunday 8 PM
+    cron.schedule('0 20 * * 0', async () => {
+      console.log('Running weekly shift reminder...');
+      try {
+        const now = new Date();
+        const nextSunday = new Date(now);
+        nextSunday.setDate(now.getDate() + 7);
+
+        const upcomingShifts = await Shift.find({
+          start_time: { $gte: now, $lte: nextSunday }
+        });
+        const shiftIds = upcomingShifts.map(s => s._id);
+
+        const schedules = await Schedule.find({ shift: { $in: shiftIds } })
+          .populate('shift user vehicle');
+
+        // Group by user
+        const byUser = {};
+        for (const s of schedules) {
+          if (!s.user || !s.user.email) continue;
+          const uid = s.user._id.toString();
+          if (!byUser[uid]) byUser[uid] = { user: s.user, shifts: [] };
+          byUser[uid].shifts.push(s);
+        }
+
+        for (const { user, shifts } of Object.values(byUser)) {
+          const lines = shifts.map(s => {
+            const date = new Date(s.shift.start_time).toLocaleDateString('en-US', {
+              weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+            });
+            const vehicle = s.vehicle ? ` — ${s.vehicle.name}` : '';
+            return `  • ${s.shift.title} on ${date}${vehicle}`;
+          });
+
+          await sendEmail({
+            email: user.email,
+            subject: 'Your Upcoming Shifts This Week',
+            message: `Hi ${user.name},\n\nHere are your shifts for the upcoming week:\n\n${lines.join('\n')}\n\nThanks!`
+          });
+        }
+
+        console.log(`Weekly reminders sent to ${Object.keys(byUser).length} user(s)`);
+      } catch (err) {
+        console.error('Weekly reminder error:', err.message);
+      }
+    });
+    console.log('Weekly reminder cron scheduled (Sunday 8 PM)');
+
     app.listen(port, () => {
       console.log(`Backend listening at http://localhost:${port}`);
     });
