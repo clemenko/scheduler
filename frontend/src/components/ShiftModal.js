@@ -103,6 +103,11 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
         <Typography sx={{ mt: 2 }}>
           {fromNaiveUTC(shift?.start_time)?.toLocaleString()} - {fromNaiveUTC(shift?.end_time)?.toLocaleString()}
         </Typography>
+        {shift?.vehicle?.name && (
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            Vehicle: {shift.vehicle.name}
+          </Typography>
+        )}
         <Typography variant="subtitle1" sx={{ mt: 2 }}>
           Signed Up:
         </Typography>

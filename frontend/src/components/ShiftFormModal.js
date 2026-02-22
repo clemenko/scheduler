@@ -26,6 +26,8 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
   const [end_time, setEndTime] = useState(null);
   const [isRecurring, setIsRecurring] = useState(false);
   const [formError, setFormError] = useState('');
+  const [vehicle, setVehicle] = useState('');
+  const [vehicles, setVehicles] = useState([]);
   const [recurrenceRule, setRecurrenceRule] = useState({
     frequency: 'weekly',
     daysOfWeek: [],
@@ -36,11 +38,26 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
   });
 
   useEffect(() => {
+    if (open) {
+      const fetchVehicles = async () => {
+        try {
+          const res = await axios.get('/api/vehicles');
+          setVehicles(res.data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      fetchVehicles();
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (currentShift) {
       setTitle(currentShift.title);
       setStartTime(fromNaiveUTC(currentShift.start_time));
       setEndTime(fromNaiveUTC(currentShift.end_time));
       setIsRecurring(currentShift.isRecurring);
+      setVehicle(currentShift.vehicle?._id || currentShift.vehicle || '');
       if (currentShift.isRecurring) {
         setRecurrenceRule({
           ...currentShift.recurrenceRule,
@@ -55,6 +72,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
       setEndTime(null);
       setIsRecurring(false);
       setFormError('');
+      setVehicle('');
       setRecurrenceRule({
         frequency: 'weekly',
         daysOfWeek: [],
@@ -95,7 +113,8 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
         ...recurrenceRule,
         endDate: recurrenceRule.endDate ? toNaiveUTC(recurrenceRule.endDate) : null
       },
-      exclusions: []
+      exclusions: [],
+      vehicle: vehicle || undefined
     };
 
     try {
@@ -151,6 +170,20 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
             minutesStep={15}
             slotProps={{ textField: { fullWidth: true, margin: 'normal', required: true } }}
           />
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Vehicle (Optional)</InputLabel>
+            <Select
+              value={vehicle}
+              label="Vehicle (Optional)"
+              onChange={(e) => setVehicle(e.target.value)}
+            >
+              <MenuItem value="">None</MenuItem>
+              {vehicles.map(v => (
+                <MenuItem key={v._id} value={v._id}>{v.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <FormControlLabel control={<Checkbox checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />} label="Recurring Shift" />
 

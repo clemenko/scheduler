@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, TableSortLabel } from '@mui/material';
 import axios from 'axios';
 import { fromNaiveUTC } from '../utils/dateUtils';
 
@@ -7,6 +7,8 @@ const AuditLog = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortField, setSortField] = useState('timestamp');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -26,6 +28,66 @@ const AuditLog = () => {
     };
     fetchLogs();
   }, []);
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedLogs = useMemo(() => {
+    return [...logs].sort((a, b) => {
+      let aVal, bVal;
+      switch (sortField) {
+        case 'timestamp':
+          aVal = new Date(a.timestamp).getTime();
+          bVal = new Date(b.timestamp).getTime();
+          break;
+        case 'action':
+          aVal = (a.action || '').toLowerCase();
+          bVal = (b.action || '').toLowerCase();
+          break;
+        case 'user':
+          aVal = (a.targetUser?.name || a.userName || '').toLowerCase();
+          bVal = (b.targetUser?.name || b.userName || '').toLowerCase();
+          break;
+        case 'shift':
+          aVal = (a.shiftTitle || '').toLowerCase();
+          bVal = (b.shiftTitle || '').toLowerCase();
+          break;
+        case 'shiftStart':
+          aVal = a.shiftStart ? new Date(a.shiftStart).getTime() : 0;
+          bVal = b.shiftStart ? new Date(b.shiftStart).getTime() : 0;
+          break;
+        case 'vehicle':
+          aVal = (a.vehicleName || '').toLowerCase();
+          bVal = (b.vehicleName || '').toLowerCase();
+          break;
+        case 'performedBy':
+          aVal = (a.performedBy?.name || '').toLowerCase();
+          bVal = (b.performedBy?.name || '').toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [logs, sortField, sortDirection]);
+
+  const columns = [
+    { id: 'timestamp', label: 'Timestamp' },
+    { id: 'action', label: 'Action' },
+    { id: 'user', label: 'User' },
+    { id: 'shift', label: 'Shift' },
+    { id: 'shiftStart', label: 'Shift Start' },
+    { id: 'vehicle', label: 'Vehicle' },
+    { id: 'performedBy', label: 'Performed By' },
+  ];
 
   const handleDownload = async () => {
     try {
@@ -59,17 +121,21 @@ const AuditLog = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Timestamp</TableCell>
-              <TableCell>Action</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Shift</TableCell>
-              <TableCell>Shift Start</TableCell>
-              <TableCell>Vehicle</TableCell>
-              <TableCell>Performed By</TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.id}>
+                  <TableSortLabel
+                    active={sortField === col.id}
+                    direction={sortField === col.id ? sortDirection : 'asc'}
+                    onClick={() => handleSort(col.id)}
+                  >
+                    {col.label}
+                  </TableSortLabel>
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {logs.map((log) => (
+            {sortedLogs.map((log) => (
               <TableRow key={log._id}>
                 <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
                 <TableCell>{log.action}</TableCell>
