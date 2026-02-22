@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, TableSortLabel } from '@mui/material';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, TableSortLabel, TablePagination } from '@mui/material';
 import axios from 'axios';
 import { fromNaiveUTC } from '@/utils/dateUtils';
 
@@ -11,16 +11,20 @@ const AuditLog = () => {
   const [error, setError] = useState(null);
   const [sortField, setSortField] = useState('timestamp');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const fetchLogs = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get('/api/auditlog', {
+        const res = await axios.get(`/api/auditlog?page=${page + 1}&limit=${rowsPerPage}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        setLogs(res.data);
+        setLogs(res.data.logs);
+        setTotal(res.data.total);
       } catch (err) {
         setError('Failed to load audit logs');
         console.error(err);
@@ -29,7 +33,7 @@ const AuditLog = () => {
       }
     };
     fetchLogs();
-  }, []);
+  }, [page, rowsPerPage]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -151,6 +155,15 @@ const AuditLog = () => {
           </TableBody>
         </Table>
       </TableContainer>}
+      {!loading && <TablePagination
+        component="div"
+        count={total}
+        page={page}
+        onPageChange={(e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+        rowsPerPageOptions={[25, 50, 100]}
+      />}
     </Box>
   );
 };

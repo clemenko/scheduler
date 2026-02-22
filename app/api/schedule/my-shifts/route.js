@@ -4,6 +4,7 @@ import Shift from '@/lib/models/Shift';
 import Schedule from '@/lib/models/Schedule';
 import Vehicle from '@/lib/models/Vehicle';
 import { requireAuth } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 export async function GET(request) {
   const auth = requireAuth(request);
@@ -41,7 +42,7 @@ export async function GET(request) {
 
     return NextResponse.json(mySignups);
   } catch (err) {
-    console.error(err.message);
+    logError('GET /api/schedule/my-shifts', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

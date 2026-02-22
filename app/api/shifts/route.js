@@ -9,6 +9,7 @@ import User from '@/lib/models/User';
 import { requireAuth } from '@/lib/auth';
 import validateShiftDates from '@/lib/validateShift';
 import sendEmail from '@/lib/email';
+import { logError } from '@/lib/logger';
 
 async function notifyNewShift(title, start_time, end_time, vehicleId) {
   try {
@@ -69,7 +70,7 @@ export async function GET(request) {
 
     return NextResponse.json(shifts);
   } catch (err) {
-    console.error(err.message);
+    logError('GET /api/shifts', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }
@@ -159,7 +160,7 @@ export async function POST(request) {
       return NextResponse.json(shift);
     }
   } catch (err) {
-    console.error('Error creating shift:', err);
+    logError('POST /api/shifts', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

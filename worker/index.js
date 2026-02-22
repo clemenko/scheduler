@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+mongoose.set('strictQuery', false);
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 

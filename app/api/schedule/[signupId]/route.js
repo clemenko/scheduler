@@ -7,6 +7,7 @@ import Vehicle from '@/lib/models/Vehicle';
 import User from '@/lib/models/User';
 import AuditLog from '@/lib/models/AuditLog';
 import { requireAuth } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -50,7 +51,7 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({ msg: 'Signup canceled' });
   } catch (err) {
-    console.error(err.message);
+    logError('DELETE /api/schedule/[signupId]', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

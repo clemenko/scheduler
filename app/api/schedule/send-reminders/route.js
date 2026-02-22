@@ -5,6 +5,7 @@ import Schedule from '@/lib/models/Schedule';
 import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
 import sendEmail from '@/lib/email';
+import { logError } from '@/lib/logger';
 
 export async function POST(request) {
   const auth = requireAdmin(request);
@@ -33,7 +34,7 @@ export async function POST(request) {
 
     return NextResponse.json({ msg: 'Reminders sent' });
   } catch (err) {
-    console.error(err.message);
+    logError('POST /api/schedule/send-reminders', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

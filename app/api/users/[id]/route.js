@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -29,7 +30,7 @@ export async function DELETE(request, { params }) {
     await User.deleteOne({ _id: id });
     return NextResponse.json({ msg: 'User deleted' });
   } catch (err) {
-    console.error(err.message);
+    logError('DELETE /api/users/[id]', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

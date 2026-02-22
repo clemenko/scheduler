@@ -5,6 +5,7 @@ import Schedule from '@/lib/models/Schedule';
 import User from '@/lib/models/User';
 import Vehicle from '@/lib/models/Vehicle';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 function getMonthRange(year, month) {
   const start = new Date(Date.UTC(year, month - 1, 1));
@@ -63,7 +64,7 @@ export async function GET(request) {
       }))
     });
   } catch (err) {
-    console.error(err.message);
+    logError('GET /api/reports/monthly', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

@@ -8,6 +8,7 @@ import User from '@/lib/models/User';
 import { requireAuth } from '@/lib/auth';
 import validateShiftDates from '@/lib/validateShift';
 import sendEmail from '@/lib/email';
+import { logError } from '@/lib/logger';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -80,7 +81,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json(shift);
   } catch (err) {
-    console.error(err.message);
+    logError('PUT /api/shifts/[id]', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }
@@ -120,7 +121,7 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({ msg: 'Shift removed' });
   } catch (err) {
-    console.error(err.message);
+    logError('DELETE /api/shifts/[id]', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

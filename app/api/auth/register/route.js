@@ -5,6 +5,7 @@ import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
 import Setting from '@/lib/models/Setting';
 import rateLimit from '@/lib/rateLimit';
+import { logError } from '@/lib/logger';
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 
@@ -54,7 +55,7 @@ export async function POST(request) {
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 });
     return NextResponse.json({ token });
   } catch (err) {
-    console.error(err.message);
+    logError('POST /api/auth/register', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

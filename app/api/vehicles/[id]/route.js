@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Vehicle from '@/lib/models/Vehicle';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 // PUT /api/vehicles/[id] — admin only
 export async function PUT(request, { params }) {
@@ -23,7 +24,7 @@ export async function PUT(request, { params }) {
     await vehicle.save();
     return NextResponse.json(vehicle);
   } catch (err) {
-    console.error(err.message);
+    logError('PUT /api/vehicles/[id]', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }
@@ -44,7 +45,7 @@ export async function DELETE(request, { params }) {
     await Vehicle.deleteOne({ _id: id });
     return NextResponse.json({ msg: 'Vehicle removed' });
   } catch (err) {
-    console.error(err.message);
+    logError('DELETE /api/vehicles/[id]', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

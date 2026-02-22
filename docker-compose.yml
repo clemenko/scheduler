@@ -21,7 +21,14 @@ services:
       - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
     depends_on:
-      - wavfd_sched_mongo
+      wavfd_sched_mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
     labels:
       - "traefik.http.routers.wavfdshed.rule=Host(`sched.wavfd.org`)"
       - "traefik.http.routers.wavfdshed.entrypoints=https"
@@ -30,11 +37,17 @@ services:
       - "traefik.http.services.wavfdshed.loadbalancer.server.port=3000"
 
   wavfd_sched_mongo:
-    image: mongo:latest
+    image: mongo:8
     container_name: wavfd_sched_mongo
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
     labels:
       - "traefik.enable=false"
     volumes:

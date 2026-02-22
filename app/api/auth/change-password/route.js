@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
 import { requireAuth } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 export async function PUT(request) {
   const auth = requireAuth(request);
@@ -36,7 +37,7 @@ export async function PUT(request) {
 
     return NextResponse.json({ msg: 'Password changed successfully' });
   } catch (err) {
-    console.error(err.message);
+    logError('PUT /api/auth/change-password', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -35,7 +36,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ msg: 'Password reset successfully' });
   } catch (err) {
-    console.error(err.message);
+    logError('PUT /api/users/[id]/reset-password', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

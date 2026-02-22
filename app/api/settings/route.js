@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Setting from '@/lib/models/Setting';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 // GET /api/settings — public
 export async function GET() {
@@ -13,9 +14,11 @@ export async function GET() {
       settings = new Setting({ calendarTitle: defaultTitle });
       await settings.save();
     }
-    return NextResponse.json(settings);
+    return NextResponse.json(settings, {
+      headers: { 'Cache-Control': 'public, max-age=60' },
+    });
   } catch (err) {
-    console.error(err.message);
+    logError('GET /api/settings', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }
@@ -46,7 +49,7 @@ export async function PUT(request) {
     await settings.save();
     return NextResponse.json(settings);
   } catch (err) {
-    console.error(err.message);
+    logError('PUT /api/settings', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

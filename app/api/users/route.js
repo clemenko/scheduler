@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 
 export async function GET(request) {
   const auth = requireAdmin(request);
@@ -12,7 +13,7 @@ export async function GET(request) {
     const users = await User.find().select('-password');
     return NextResponse.json(users);
   } catch (err) {
-    console.error(err.message);
+    logError('GET /api/users', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }

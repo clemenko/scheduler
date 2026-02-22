@@ -2,6 +2,7 @@ import dbConnect from '@/lib/dbConnect';
 import AuditLog from '@/lib/models/AuditLog';
 import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
+import { logError } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
@@ -36,7 +37,7 @@ export async function GET(request) {
       }
     });
   } catch (err) {
-    console.error(err.message);
+    logError('GET /api/auditlog/export', err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });
   }
 }
