@@ -1,15 +1,2 @@
 # Todo — WAVFD Scheduler
 
-
-Under the Admin account:
-
-    In the Shift Management, can it be sorted by date?  Or have it so the user can click on the column names and it will sort ascending/descending based on which they select.  It looks like it is sorted by date of creation, so that one with all the recurring Friday shifts always comes first since it was probably created first, but then other things that were created later always show up after it.
-    Similar with the Audit Log, although it does appear it is sorted by date.  Although probably not a big deal since I think the use case here would be downloading the .csv file anyway and you can sort that however you want.
-
-
-Under the regular account:
-
-    I created a user account for myself and added a shift.  It asked for the date/time/duration but it did not ask for a Vehicle (intent was to make it a suppression drill).  Once it was added, I could click on it and select a Vehicle for it and sign up.  I think the way this should work is when you create a shift, you should also have to select what it's for.  Then people know that it's engine, ambo, drill, etc.  When you click on it then it should just show the full information and the Sign Up button.  If you Edit the shift, then it should let you change the vehicle along with the date, time, name, etc.  i.e., associate the vehicle with the creation of the shift rather than the signing up for the shift.  I'm not sure if that might have ripple effects under the cover depending on how the database tables are designed.  Ideally, you should be able to have multiple shifts that might be the same timeframe but for different vehicles.  For example, A409 with up to 3 people from 1700-2200 and E401 for up to 6 people also from 1700-2200.
-    I did the Email Test button and got the email ok.  I think when a shift is added, eventually (maybe not during this testing) you'd want it to send an email to all of the users so they're all aware that something was added.  When we were using the WhenToHelp system, it did that and I found it made it easier to get the word out when I was adding crews for E401, drills, PubEd, etc.  i.e., I didn't have to go send something out to people telling them I'd created an event and asking people to sign up.  They just got the email from the system and from there they could go and sign up.  
-    Along similar lines as the above, if an event is deleted then the system should send an email to the users who are currently signed up for it that it was removed.
-    When you switch to the Table View, it looks like everything is sorted based on creation time rather than by the scheduled date/time.  Similar to the comment above under Admin.  I'd either sort it by scheduled date/time, or have the column headers clickable so the user can pick which header they want it sorted on. (but default to the scheduled date/time, not creation time)

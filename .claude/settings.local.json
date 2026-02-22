@@ -6,7 +6,8 @@
       "Bash(npx jest --no-coverage)",
       "Bash(node --version:*)",
       "Bash(npm:*)",
-      "Bash(node node_modules/.bin/jest:*)"
+      "Bash(node node_modules/.bin/jest:*)",
+      "Bash(tail:*)"
     ]
   }
 }
