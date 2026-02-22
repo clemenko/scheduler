@@ -1,27 +1,13 @@
 services:
-  wavfd_sched_frontend:
-    build: ./frontend
-    image: clemenko/scheduler-frontend
-    container_name: wavfd_sched_frontend
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-    depends_on:
-      - wavfd_sched_backend
-    labels:
-      - "traefik.http.routers.wavfdshed.rule=Host(`sched.wavfd.org`)"
-      - "traefik.http.routers.wavfdshed.entrypoints=https"
-      - "traefik.http.routers.wavfdshed.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.wavfdshed.middlewares=security-headers"
-
-  wavfd_sched_backend:
-    build: ./backend
-    image: clemenko/scheduler-backend
-    container_name: wavfd_sched_backend
+  wavfd_sched_app:
+    build: .
+    image: clemenko/scheduler:next
+    container_name: wavfd_sched_app
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
     environment:
+      - MONGODB_URI=mongodb://wavfd_sched_mongo:27017/scheduler
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Pa22word}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@wavfd.org}
       - CALENDAR_TITLE=${CALENDAR_TITLE:-Demo WAVFD Scheduler}
@@ -34,11 +20,14 @@ services:
       - SMTP_TLS_REJECT_UNAUTHORIZED=${SMTP_TLS_REJECT_UNAUTHORIZED:-true}
       - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
-    command: sh -c "node seed.js && npm start"
     depends_on:
       - wavfd_sched_mongo
     labels:
-      - "traefik.enable=false"
+      - "traefik.http.routers.wavfdshed.rule=Host(`sched.wavfd.org`)"
+      - "traefik.http.routers.wavfdshed.entrypoints=https"
+      - "traefik.http.routers.wavfdshed.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.wavfdshed.middlewares=security-headers"
+      - "traefik.http.services.wavfdshed.loadbalancer.server.port=3000"
 
   wavfd_sched_mongo:
     image: mongo:latest
@@ -50,8 +39,6 @@ services:
       - "traefik.enable=false"
     volumes:
       - mongo-data:/data/db
-    # volumes:
-    #  - /home/wavfdshed/mongo:/data/db
 
 volumes:
   mongo-data:
