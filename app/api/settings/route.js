@@ -4,6 +4,11 @@ import Setting from '@/lib/models/Setting';
 import { requireAdmin } from '@/lib/auth';
 import { logError } from '@/lib/logger';
 
+// Allow larger request body for Base64 logo uploads
+export const config = {
+  api: { bodyParser: { sizeLimit: '6mb' } },
+};
+
 // GET /api/settings — public
 export async function GET() {
   try {

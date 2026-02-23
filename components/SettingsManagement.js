@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Typography, TextField, Button, Box, FormControlLabel, Switch, Divider, CircularProgress } from '@mui/material';
+import { Typography, TextField, Button, Box, FormControlLabel, Switch, Divider, CircularProgress, Stack } from '@mui/material';
 import axios from 'axios';
+
+const MAX_LOGO_SIZE = 4 * 1024 * 1024; // 4 MB
 
 const SettingsManagement = ({ showSnackbar }) => {
   const [calendarTitle, setCalendarTitle] = useState('');
@@ -11,6 +13,23 @@ const SettingsManagement = ({ showSnackbar }) => {
   const [logoUrl, setLogoUrl] = useState('');
   const [testEmail, setTestEmail] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showSnackbar('Please select an image file.', 'error');
+      return;
+    }
+    if (file.size > MAX_LOGO_SIZE) {
+      showSnackbar('Logo must be under 4 MB.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setLogoUrl(reader.result);
+    reader.onerror = () => showSnackbar('Failed to read file.', 'error');
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -53,20 +72,26 @@ const SettingsManagement = ({ showSnackbar }) => {
         value={calendarTitle}
         onChange={(e) => setCalendarTitle(e.target.value)}
       />
-      <TextField
-        label="Logo URL"
-        fullWidth
-        margin="normal"
-        value={logoUrl}
-        onChange={(e) => setLogoUrl(e.target.value)}
-        placeholder="https://example.com/logo.png"
-      />
-      {logoUrl && (
-        <Box sx={{ mt: 1, mb: 1 }}>
-          <Typography variant="body2" color="textSecondary" gutterBottom>Preview:</Typography>
-          <img src={logoUrl} alt="Logo preview" style={{ maxHeight: 40, maxWidth: 200 }} />
-        </Box>
-      )}
+      <Box sx={{ mt: 2, mb: 1 }}>
+        <Typography variant="subtitle2" gutterBottom>Logo</Typography>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Button variant="outlined" component="label">
+            Upload Logo
+            <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
+          </Button>
+          {logoUrl && (
+            <Button variant="outlined" color="error" size="small" onClick={() => setLogoUrl('')}>
+              Remove
+            </Button>
+          )}
+        </Stack>
+        {logoUrl && (
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="body2" color="textSecondary" gutterBottom>Preview:</Typography>
+            <img src={logoUrl} alt="Logo preview" style={{ maxHeight: 40, maxWidth: 200 }} />
+          </Box>
+        )}
+      </Box>
       <Box sx={{ mt: 2, mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Typography>Header Color</Typography>
         <input
