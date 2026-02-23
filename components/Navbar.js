@@ -26,7 +26,16 @@ const Navbar = () => {
         const res = await axios.get('/api/settings');
         setCalendarTitle(res.data.calendarTitle);
         if (res.data.headerColor) setHeaderColor(res.data.headerColor);
-        if (res.data.logoUrl) setLogoUrl(res.data.logoUrl);
+        if (res.data.logoUrl) {
+          setLogoUrl(res.data.logoUrl);
+          let link = document.querySelector("link[rel~='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = '/api/favicon';
+        }
       } catch (err) {
         console.error(err);
       }

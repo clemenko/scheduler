@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useEffect, useRef, useCallback } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -19,6 +19,19 @@ const Calendar = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [editShift, setEditShift] = useState(null);
+  const calendarRef = useRef(null);
+  const [calendarHeight, setCalendarHeight] = useState(600);
+
+  const updateHeight = useCallback(() => {
+    const offset = calendarRef.current?.getBoundingClientRect().top || 0;
+    setCalendarHeight(Math.min(window.innerHeight - offset - 16, 900));
+  }, []);
+
+  useEffect(() => {
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, [updateHeight]);
 
   const formattedShifts = useMemo(() => shifts.map(shift => ({
     title: shift.title,
@@ -69,10 +82,11 @@ const Calendar = () => {
           </Button>
         </Box>
       )}
+      <div ref={calendarRef}>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        height="auto"
+        height={calendarHeight}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
@@ -83,6 +97,7 @@ const Calendar = () => {
         showNonCurrentDates={false}
         fixedWeekCount={false}
       />
+      </div>
       <ShiftModal
         open={modalOpen}
         handleClose={handleModalClose}
