@@ -54,6 +54,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
   }, [open]);
 
   useEffect(() => {
+    if (!open) return;
     if (currentShift) {
       setTitle(currentShift.title);
       setStartTime(fromNaiveUTC(currentShift.start_time));
@@ -84,7 +85,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
         occurrences: 1
       });
     }
-  }, [currentShift]);
+  }, [currentShift, open]);
 
   const handleRecurrenceChange = (e) => {
     setRecurrenceRule({ ...recurrenceRule, [e.target.name]: e.target.value });

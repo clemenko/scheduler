@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
 import axios from 'axios';
 import VehicleFormModal from '@/components/VehicleFormModal';
 
@@ -9,6 +9,31 @@ const VehicleManagement = () => {
   const [vehicles, setVehicles] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentVehicle, setCurrentVehicle] = useState(null);
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedVehicles = [...vehicles].sort((a, b) => {
+    let valA, valB;
+    if (sortField === 'capacity') {
+      valA = a.capacity || 0;
+      valB = b.capacity || 0;
+    } else {
+      valA = (a[sortField] || '').toLowerCase();
+      valB = (b[sortField] || '').toLowerCase();
+    }
+    if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+    if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   const fetchVehicles = async () => {
     try {
@@ -66,14 +91,20 @@ const VehicleManagement = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Capacity</TableCell>
+              <TableCell sortDirection={sortField === 'name' ? sortDirection : false}>
+                <TableSortLabel active={sortField === 'name'} direction={sortField === 'name' ? sortDirection : 'asc'} onClick={() => handleSort('name')}>Name</TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'description' ? sortDirection : false}>
+                <TableSortLabel active={sortField === 'description'} direction={sortField === 'description' ? sortDirection : 'asc'} onClick={() => handleSort('description')}>Description</TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'capacity' ? sortDirection : false}>
+                <TableSortLabel active={sortField === 'capacity'} direction={sortField === 'capacity' ? sortDirection : 'asc'} onClick={() => handleSort('capacity')}>Capacity</TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {vehicles.map((vehicle) => (
+            {sortedVehicles.map((vehicle) => (
               <TableRow key={vehicle._id}>
                 <TableCell>{vehicle.name}</TableCell>
                 <TableCell>{vehicle.description}</TableCell>

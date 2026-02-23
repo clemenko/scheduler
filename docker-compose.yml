@@ -1,7 +1,7 @@
 services:
   wavfd_sched_app:
     build: .
-    image: clemenko/scheduler:next
+    image: clemenko/scheduler
     container_name: wavfd_sched_app
     security_opt:
       - no-new-privileges:true
@@ -21,8 +21,7 @@ services:
       - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
     depends_on:
-      wavfd_sched_mongo:
-        condition: service_healthy
+      - wavfd_sched_mongo
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
@@ -37,17 +36,12 @@ services:
       - "traefik.http.services.wavfdshed.loadbalancer.server.port=3000"
 
   wavfd_sched_mongo:
-    image: mongo:8
+    image: cgr.dev/chainguard/mongodb
     container_name: wavfd_sched_mongo
+    command: --bind_ip_all --noauth --dbpath /data/db
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      start_period: 10s
-      retries: 3
     labels:
       - "traefik.enable=false"
     volumes:

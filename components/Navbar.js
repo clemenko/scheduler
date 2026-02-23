@@ -6,10 +6,12 @@ import { useRouter, usePathname } from 'next/navigation';
 import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { AuthContext } from '@/context/AuthContext';
+import { ViewContext } from '@/context/ViewContext';
 import axios from 'axios';
 
-const Navbar = ({ view, setView }) => {
+const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+  const { view, setView } = useContext(ViewContext);
   const [calendarTitle, setCalendarTitle] = useState('Fire Department Scheduler');
   const [headerColor, setHeaderColor] = useState('#1976d2');
   const [logoUrl, setLogoUrl] = useState('');

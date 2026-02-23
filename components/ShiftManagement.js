@@ -115,6 +115,7 @@ const ShiftManagement = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
+    setCurrentShift(null);
   };
 
   const columns = [

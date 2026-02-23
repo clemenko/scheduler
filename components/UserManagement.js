@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Select, MenuItem, FormControl } from '@mui/material';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Select, MenuItem, FormControl, TableSortLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import ResetPasswordModal from '@/components/ResetPasswordModal';
@@ -14,6 +14,25 @@ const UserManagement = ({ showSnackbar }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [userFormModalOpen, setUserFormModalOpen] = useState(false);
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    const valA = (a[sortField] || '').toLowerCase();
+    const valB = (b[sortField] || '').toLowerCase();
+    if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+    if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -104,14 +123,20 @@ const UserManagement = ({ showSnackbar }) => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Role</TableCell>
+              <TableCell sortDirection={sortField === 'name' ? sortDirection : false}>
+                <TableSortLabel active={sortField === 'name'} direction={sortField === 'name' ? sortDirection : 'asc'} onClick={() => handleSort('name')}>Name</TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'email' ? sortDirection : false}>
+                <TableSortLabel active={sortField === 'email'} direction={sortField === 'email' ? sortDirection : 'asc'} onClick={() => handleSort('email')}>Email</TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'role' ? sortDirection : false}>
+                <TableSortLabel active={sortField === 'role'} direction={sortField === 'role' ? sortDirection : 'asc'} onClick={() => handleSort('role')}>Role</TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map(user => (
+            {sortedUsers.map(user => (
               <TableRow key={user._id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
