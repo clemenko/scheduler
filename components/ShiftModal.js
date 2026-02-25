@@ -24,6 +24,8 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
   const { user } = useContext(AuthContext);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState('');
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -34,17 +36,32 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
         console.error(err);
       }
     };
+    const fetchUsers = async () => {
+      try {
+        const res = await axios.get('/api/users', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        setUsers(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
     if (open) {
       fetchVehicles();
+      setSelectedUser(user?.id || '');
+      if (user?.role === 'admin') {
+        fetchUsers();
+      }
     }
-  }, [open]);
+  }, [open, user]);
 
   const handleSignUp = async () => {
     try {
-      await axios.post('/api/schedule/signup', {
-        shiftId: shift._id,
-        vehicleId: selectedVehicle,
-      }, {
+      const body = { shiftId: shift._id, vehicleId: selectedVehicle };
+      if (user?.role === 'admin' && selectedUser) {
+        body.userId = selectedUser;
+      }
+      await axios.post('/api/schedule/signup', body, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -131,6 +148,20 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
         )}
         {user?.role !== 'viewer' && (
           <>
+            {user?.role === 'admin' && (
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>User</InputLabel>
+                <Select
+                  value={selectedUser}
+                  label="User"
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                >
+                  {users.map(u => (
+                    <MenuItem key={u._id} value={u._id}>{u.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <FormControl fullWidth sx={{ mt: 2 }}>
               <InputLabel>Vehicle</InputLabel>
               <Select

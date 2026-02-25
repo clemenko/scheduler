@@ -21,9 +21,21 @@ export async function POST(request) {
     return NextResponse.json({ msg: 'Viewers cannot sign up for shifts' }, { status: 403 });
   }
 
-  const { shiftId, vehicleId } = await request.json();
+  const { shiftId, vehicleId, userId } = await request.json();
   if (!isValidId(shiftId) || !isValidId(vehicleId)) {
     return NextResponse.json({ msg: 'Invalid shift or vehicle ID' }, { status: 400 });
+  }
+
+  // Admin can sign up another user; otherwise default to the authenticated user
+  let targetUserId = auth.user.id;
+  if (userId) {
+    if (!isValidId(userId)) {
+      return NextResponse.json({ msg: 'Invalid user ID' }, { status: 400 });
+    }
+    if (auth.user.role !== 'admin') {
+      return NextResponse.json({ msg: 'Only admins can sign up other users' }, { status: 403 });
+    }
+    targetUserId = userId;
   }
 
   try {
@@ -44,34 +56,34 @@ export async function POST(request) {
       return NextResponse.json({ msg: 'This vehicle is full for this shift' }, { status: 400 });
     }
 
-    const existingSignup = await Schedule.findOne({ shift: shiftId, user: auth.user.id });
+    const existingSignup = await Schedule.findOne({ shift: shiftId, user: targetUserId });
     if (existingSignup) {
       return NextResponse.json({ msg: 'User already signed up for this shift' }, { status: 400 });
     }
 
     const newSignup = new Schedule({
       shift: shiftId,
-      user: auth.user.id,
+      user: targetUserId,
       vehicle: vehicleId
     });
 
     const signup = await newSignup.save();
 
-    const actingUser = await User.findById(auth.user.id);
+    const targetUser = await User.findById(targetUserId);
     await new AuditLog({
       action: 'signup',
       performedBy: auth.user.id,
-      targetUser: auth.user.id,
+      targetUser: targetUserId,
       shift: shiftId,
       vehicle: vehicleId,
-      userName: actingUser?.name,
+      userName: targetUser?.name,
       shiftTitle: shift.title,
       shiftStart: shift.start_time,
       vehicleName: vehicle.name
     }).save();
 
     // Fire-and-forget confirmation email with ICS attachment
-    if (actingUser?.email) {
+    if (targetUser?.email) {
       const startDate = new Date(shift.start_time);
       const endDate = new Date(shift.end_time);
       const icsContent = generateICS({
@@ -87,7 +99,7 @@ export async function POST(request) {
       const endStr = endDate.toLocaleString('en-US', formatOpts) + ' ET';
 
       sendEmail({
-        email: actingUser.email,
+        email: targetUser.email,
         subject: `Shift Confirmation: ${shift.title}`,
         message: `You have signed up for the following shift:\n\nShift: ${shift.title}\nVehicle: ${vehicle.name}\nStart: ${startStr}\nEnd: ${endStr}\n\nA calendar event is attached.`,
         icalContent: icsContent,
