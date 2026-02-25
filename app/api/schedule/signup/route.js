@@ -90,11 +90,12 @@ export async function POST(request) {
         email: actingUser.email,
         subject: `Shift Confirmation: ${shift.title}`,
         message: `You have signed up for the following shift:\n\nShift: ${shift.title}\nVehicle: ${vehicle.name}\nStart: ${startStr}\nEnd: ${endStr}\n\nA calendar event is attached.`,
+        icalContent: icsContent,
         attachments: [
           {
             filename: 'shift.ics',
             content: icsContent,
-            contentType: 'text/calendar'
+            contentType: 'text/calendar; method=REQUEST'
           }
         ]
       }).catch(err => logError('Signup confirmation email', err));
