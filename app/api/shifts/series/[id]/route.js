@@ -43,8 +43,8 @@ export async function PUT(request, { params }) {
   const auth = requireAuth(request);
   if (auth.error) return NextResponse.json(auth.error, { status: auth.status });
 
-  if (auth.user.role === 'viewer') {
-    return NextResponse.json({ msg: 'Viewers cannot edit shifts' }, { status: 403 });
+  if (auth.user.role !== 'admin') {
+    return NextResponse.json({ msg: 'Only admins can edit shifts' }, { status: 403 });
   }
 
   const { id } = await params;
@@ -60,9 +60,6 @@ export async function PUT(request, { params }) {
     let parentShift = await Shift.findById(id);
     if (!parentShift) {
       return NextResponse.json({ msg: 'Shift series not found' }, { status: 404 });
-    }
-    if (auth.user.role !== 'admin' && parentShift.creator.toString() !== auth.user.id) {
-      return NextResponse.json({ msg: 'You can only edit your own shifts' }, { status: 403 });
     }
 
     await Shift.deleteMany({ $or: [{ _id: parentShift._id }, { parentShift: parentShift._id }] });
@@ -126,8 +123,8 @@ export async function DELETE(request, { params }) {
   const auth = requireAuth(request);
   if (auth.error) return NextResponse.json(auth.error, { status: auth.status });
 
-  if (auth.user.role === 'viewer') {
-    return NextResponse.json({ msg: 'Viewers cannot delete shifts' }, { status: 403 });
+  if (auth.user.role !== 'admin') {
+    return NextResponse.json({ msg: 'Only admins can delete shifts' }, { status: 403 });
   }
 
   const { id } = await params;
@@ -141,10 +138,6 @@ export async function DELETE(request, { params }) {
     let shift = await Shift.findById(id);
     if (!shift) {
       return NextResponse.json({ msg: 'Shift series not found' }, { status: 404 });
-    }
-
-    if (auth.user.role !== 'admin' && shift.creator.toString() !== auth.user.id) {
-      return NextResponse.json({ msg: 'You can only delete your own shifts' }, { status: 403 });
     }
 
     const parentId = shift.parentShift || shift._id;

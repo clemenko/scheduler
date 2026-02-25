@@ -58,12 +58,9 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ msg: 'Shift not found' }, { status: 404 });
     }
 
-    // Allow admins, shift creators, and users signed up for this shift
-    if (auth.user.role !== 'admin' && shift.creator.toString() !== auth.user.id) {
-      const signup = await Schedule.findOne({ shift: id, user: auth.user.id });
-      if (!signup) {
-        return NextResponse.json({ msg: 'You can only edit shifts you created or are signed up for' }, { status: 403 });
-      }
+    // Only admins can update shifts
+    if (auth.user.role !== 'admin') {
+      return NextResponse.json({ msg: 'Only admins can edit shifts' }, { status: 403 });
     }
     if (shift.isRecurring) {
       return NextResponse.json({ msg: 'This is a recurring shift. Please update the entire series.' }, { status: 400 });

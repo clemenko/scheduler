@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import {
   Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Paper, CircularProgress, Alert, IconButton, TableSortLabel,
@@ -11,8 +11,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import { fromNaiveUTC } from '@/utils/dateUtils';
 import ShiftFormModal from '@/components/ShiftFormModal';
+import { AuthContext } from '@/context/AuthContext';
 
 const MyShifts = () => {
+  const { user } = useContext(AuthContext);
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -153,9 +155,11 @@ const MyShifts = () => {
                   <TableCell>{fromNaiveUTC(signup.shift?.end_time)?.toLocaleString()}</TableCell>
                   <TableCell>{signup.vehicle?.name}</TableCell>
                   <TableCell align="right">
+                    {user?.role === 'admin' && (
                     <IconButton size="small" onClick={() => handleEditClick(signup)} title="Edit shift">
                       <EditIcon fontSize="small" />
                     </IconButton>
+                    )}
                     <IconButton size="small" color="error" onClick={() => handleDeleteClick(signup)} title="Cancel signup">
                       <DeleteIcon fontSize="small" />
                     </IconButton>

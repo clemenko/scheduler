@@ -114,7 +114,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
           </Typography>
           {canManageShift && (
             <Box>
-              {onEdit && <Button size="small" onClick={() => onEdit(shift)}>Edit</Button>}
+              {onEdit && user?.role === 'admin' && <Button size="small" onClick={() => onEdit(shift)}>Edit</Button>}
               <Button size="small" color="error" onClick={handleDeleteShift}>Delete</Button>
             </Box>
           )}
