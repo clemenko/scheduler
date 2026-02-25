@@ -82,9 +82,9 @@ export async function POST(request) {
         location: vehicle.name
       });
 
-      const formatOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
-      const startStr = startDate.toLocaleString('en-US', formatOpts);
-      const endStr = endDate.toLocaleString('en-US', formatOpts);
+      const formatOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' };
+      const startStr = startDate.toLocaleString('en-US', formatOpts) + ' ET';
+      const endStr = endDate.toLocaleString('en-US', formatOpts) + ' ET';
 
       sendEmail({
         email: actingUser.email,

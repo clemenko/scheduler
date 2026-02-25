@@ -26,7 +26,7 @@ async function notifyDeletedShift(shiftIds) {
       if (!signup.user?.email) continue;
       const shift = shiftMap[signup.shift.toString()];
       if (!shift) continue;
-      const startStr = new Date(shift.start_time).toLocaleString();
+      const startStr = new Date(shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' ET';
       sendEmail({
         email: signup.user.email,
         subject: `Shift Cancelled: ${shift.title}`,

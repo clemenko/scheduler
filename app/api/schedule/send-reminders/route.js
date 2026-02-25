@@ -25,7 +25,7 @@ export async function POST(request) {
       const emailOptions = {
         email: schedule.user.email,
         subject: 'Shift Reminder',
-        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${schedule.shift.start_time}.`
+        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${new Date(schedule.shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })} ET.`
       };
       await sendEmail(emailOptions);
       schedule.reminderSent = true;

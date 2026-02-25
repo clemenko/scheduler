@@ -75,7 +75,7 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Worker: MongoDB connected');
 
-    // Weekly reminder cron — Sunday 8 PM
+    // Weekly reminder cron — Sunday 8 PM ET
     cron.schedule('0 20 * * 0', async () => {
       console.log('Running weekly shift reminder...');
       try {
@@ -102,7 +102,7 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
         for (const { user, shifts } of Object.values(byUser)) {
           const lines = shifts.map(s => {
             const date = new Date(s.shift.start_time).toLocaleDateString('en-US', {
-              weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+              weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC'
             });
             const vehicle = s.vehicle ? ` — ${s.vehicle.name}` : '';
             return `  • ${s.shift.title} on ${date}${vehicle}`;
@@ -119,8 +119,8 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
       } catch (err) {
         console.error('Weekly reminder error:', err.message);
       }
-    });
-    console.log('Weekly reminder cron scheduled (Sunday 8 PM)');
+    }, { timezone: 'America/New_York' });
+    console.log('Weekly reminder cron scheduled (Sunday 8 PM ET)');
 
     // Daily shift reminder cron — 6 AM every day
     cron.schedule('0 6 * * *', async () => {
@@ -144,7 +144,7 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
         for (const schedule of schedules) {
           if (!schedule.user || !schedule.user.email) continue;
           const startTime = new Date(schedule.shift.start_time).toLocaleTimeString('en-US', {
-            hour: 'numeric', minute: '2-digit'
+            hour: 'numeric', minute: '2-digit', timeZone: 'UTC'
           });
           const vehicle = schedule.vehicle ? ` on ${schedule.vehicle.name}` : '';
           await sendEmail({
@@ -160,8 +160,8 @@ mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
       } catch (err) {
         console.error('Daily reminder error:', err.message);
       }
-    });
-    console.log('Daily shift reminder cron scheduled (6 AM)');
+    }, { timezone: 'America/New_York' });
+    console.log('Daily shift reminder cron scheduled (6 AM ET)');
 
     console.log('Worker is running...');
   })
