@@ -8,6 +8,8 @@ import User from '@/lib/models/User';
 import AuditLog from '@/lib/models/AuditLog';
 import { requireAuth } from '@/lib/auth';
 import { logError } from '@/lib/logger';
+import sendEmail from '@/lib/email';
+import { generateICS } from '@/lib/ics';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -67,6 +69,36 @@ export async function POST(request) {
       shiftStart: shift.start_time,
       vehicleName: vehicle.name
     }).save();
+
+    // Fire-and-forget confirmation email with ICS attachment
+    if (actingUser?.email) {
+      const startDate = new Date(shift.start_time);
+      const endDate = new Date(shift.end_time);
+      const icsContent = generateICS({
+        title: shift.title,
+        start: shift.start_time,
+        end: shift.end_time,
+        description: `Shift: ${shift.title}\nVehicle: ${vehicle.name}`,
+        location: vehicle.name
+      });
+
+      const formatOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+      const startStr = startDate.toLocaleString('en-US', formatOpts);
+      const endStr = endDate.toLocaleString('en-US', formatOpts);
+
+      sendEmail({
+        email: actingUser.email,
+        subject: `Shift Confirmation: ${shift.title}`,
+        message: `You have signed up for the following shift:\n\nShift: ${shift.title}\nVehicle: ${vehicle.name}\nStart: ${startStr}\nEnd: ${endStr}\n\nA calendar event is attached.`,
+        attachments: [
+          {
+            filename: 'shift.ics',
+            content: icsContent,
+            contentType: 'text/calendar'
+          }
+        ]
+      }).catch(err => logError('Signup confirmation email', err));
+    }
 
     return NextResponse.json(signup);
   } catch (err) {
