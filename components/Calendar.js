@@ -6,6 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Button, Box } from '@mui/material';
+import axios from 'axios';
 import ShiftModal from '@/components/ShiftModal';
 import ShiftFormModal from '@/components/ShiftFormModal';
 import { ShiftContext } from '@/context/ShiftContext';
@@ -21,6 +22,7 @@ const Calendar = () => {
   const [editShift, setEditShift] = useState(null);
   const calendarRef = useRef(null);
   const [calendarHeight, setCalendarHeight] = useState(600);
+  const [headerColor, setHeaderColor] = useState('#1976d2');
 
   const updateHeight = useCallback(() => {
     const offset = calendarRef.current?.getBoundingClientRect().top || 0;
@@ -32,6 +34,30 @@ const Calendar = () => {
     window.addEventListener('resize', updateHeight);
     return () => window.removeEventListener('resize', updateHeight);
   }, [updateHeight]);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get('/api/settings');
+        if (res.data.headerColor) setHeaderColor(res.data.headerColor);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    const styleId = 'fc-today-highlight';
+    let style = document.getElementById(styleId);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    style.textContent = `.fc-day-today { background-color: ${headerColor}1A !important; }`;
+    return () => { if (style.parentNode) style.parentNode.removeChild(style); };
+  }, [headerColor]);
 
   const formattedShifts = useMemo(() => shifts.map(shift => ({
     title: shift.title,
