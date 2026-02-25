@@ -4,6 +4,7 @@ import React, { useState, useContext, useMemo } from 'react';
 import { Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TableSortLabel } from '@mui/material';
 import axios from 'axios';
 import ShiftFormModal from '@/components/ShiftFormModal';
+import ShiftModal from '@/components/ShiftModal';
 import { ShiftContext } from '@/context/ShiftContext';
 import { fromNaiveUTC } from '@/utils/dateUtils';
 
@@ -15,6 +16,8 @@ const ShiftManagement = () => {
   const [shiftToDelete, setShiftToDelete] = useState(null);
   const [sortField, setSortField] = useState('start_time');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedShift, setSelectedShift] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -155,7 +158,12 @@ const ShiftManagement = () => {
           </TableHead>
           <TableBody>
             {sortedShifts.map((shift) => (
-              <TableRow key={shift._id}>
+              <TableRow
+                key={shift._id}
+                hover
+                sx={{ cursor: 'pointer' }}
+                onClick={() => { setSelectedShift(shift); setDetailModalOpen(true); }}
+              >
                 <TableCell>{shift.title}</TableCell>
                 <TableCell>{fromNaiveUTC(shift.start_time)?.toLocaleString()}</TableCell>
                 <TableCell>{fromNaiveUTC(shift.end_time)?.toLocaleString()}</TableCell>
@@ -167,14 +175,20 @@ const ShiftManagement = () => {
                     : 'No'}
                 </TableCell>
                 <TableCell>
-                  <Button onClick={() => handleEditShift(shift)}>Edit</Button>
-                  <Button onClick={() => handleDeleteShift(shift)}>Delete</Button>
+                  <Button onClick={(e) => { e.stopPropagation(); handleEditShift(shift); }}>Edit</Button>
+                  <Button onClick={(e) => { e.stopPropagation(); handleDeleteShift(shift); }}>Delete</Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <ShiftModal
+        open={detailModalOpen}
+        handleClose={() => { setDetailModalOpen(false); setSelectedShift(null); fetchShifts(); }}
+        shift={selectedShift}
+        onEdit={(shift) => { setDetailModalOpen(false); handleEditShift(shift); }}
+      />
       <ShiftFormModal
         open={modalOpen}
         handleClose={handleCloseModal}

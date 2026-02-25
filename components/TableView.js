@@ -3,12 +3,15 @@
 import React, { useContext, useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
 import { ShiftContext } from '@/context/ShiftContext';
+import ShiftModal from '@/components/ShiftModal';
 import { fromNaiveUTC } from '@/utils/dateUtils';
 
 const TableView = () => {
-  const { shifts } = useContext(ShiftContext);
+  const { shifts, fetchShifts } = useContext(ShiftContext);
   const [sortField, setSortField] = useState('start_time');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedShift, setSelectedShift] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -61,6 +64,7 @@ const TableView = () => {
   ];
 
   return (
+  <>
     <TableContainer component={Paper}>
       <Table size="small">
         <TableHead>
@@ -80,7 +84,12 @@ const TableView = () => {
         </TableHead>
         <TableBody>
           {sortedShifts.map((shift) => (
-            <TableRow key={shift._id}>
+            <TableRow
+              key={shift._id}
+              hover
+              sx={{ cursor: 'pointer' }}
+              onClick={() => { setSelectedShift(shift); setModalOpen(true); }}
+            >
               <TableCell>{shift.title}</TableCell>
               <TableCell>{fromNaiveUTC(shift.start_time)?.toLocaleString()}</TableCell>
               <TableCell>{fromNaiveUTC(shift.end_time)?.toLocaleString()}</TableCell>
@@ -91,6 +100,12 @@ const TableView = () => {
         </TableBody>
       </Table>
     </TableContainer>
+    <ShiftModal
+      open={modalOpen}
+      handleClose={() => { setModalOpen(false); setSelectedShift(null); fetchShifts(); }}
+      shift={selectedShift}
+    />
+  </>
   );
 };
 
