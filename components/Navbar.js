@@ -5,13 +5,17 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import { AuthContext } from '@/context/AuthContext';
 import { ViewContext } from '@/context/ViewContext';
+import { useThemeContext } from '@/context/ThemeContext';
 import axios from 'axios';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const { view, setView } = useContext(ViewContext);
+  const { mode, toggleMode } = useThemeContext();
   const [calendarTitle, setCalendarTitle] = useState('Fire Department Scheduler');
   const [headerColor, setHeaderColor] = useState('#1976d2');
   const [logoUrl, setLogoUrl] = useState('');
@@ -69,6 +73,9 @@ const Navbar = () => {
             {calendarTitle}
           </Link>
         </Typography>
+        <IconButton color="inherit" onClick={toggleMode} aria-label="toggle dark mode" sx={{ mr: 1 }}>
+          {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
         {user ? (
           <>
             <Typography sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
