@@ -6,6 +6,9 @@ import User from '@/lib/models/User';
 import Vehicle from '@/lib/models/Vehicle';
 import { requireAdmin } from '@/lib/auth';
 import { logError } from '@/lib/logger';
+import rateLimit from '@/lib/rateLimit';
+
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 5 });
 
 function getMonthRange(year, month) {
   const start = new Date(Date.UTC(year, month - 1, 1));
@@ -14,6 +17,9 @@ function getMonthRange(year, month) {
 }
 
 export async function GET(request) {
+  const limited = limiter(request);
+  if (limited) return NextResponse.json(limited.error, { status: limited.status });
+
   const auth = requireAdmin(request);
   if (auth.error) return NextResponse.json(auth.error, { status: auth.status });
 
@@ -23,8 +29,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const year = parseInt(searchParams.get('year'));
     const month = parseInt(searchParams.get('month'));
-    if (!year || !month || month < 1 || month > 12) {
-      return NextResponse.json({ msg: 'Valid year and month (1-12) are required' }, { status: 400 });
+    if (!year || !month || month < 1 || month > 12 || year < 2000 || year > 2100) {
+      return NextResponse.json({ msg: 'Valid year (2000-2100) and month (1-12) are required' }, { status: 400 });
     }
 
     const { start, end } = getMonthRange(year, month);

@@ -25,11 +25,15 @@ export async function POST(request) {
       const emailOptions = {
         email: schedule.user.email,
         subject: 'Shift Reminder',
-        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${new Date(schedule.shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })} ET.`
+        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${new Date(schedule.shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET.`
       };
-      await sendEmail(emailOptions);
-      schedule.reminderSent = true;
-      await schedule.save();
+      try {
+        await sendEmail(emailOptions);
+        schedule.reminderSent = true;
+        await schedule.save();
+      } catch (emailErr) {
+        logError('send-reminders email', emailErr, { userId: schedule.user._id, shiftId: schedule.shift._id });
+      }
     }
 
     return NextResponse.json({ msg: 'Reminders sent' });

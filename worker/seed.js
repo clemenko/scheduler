@@ -1,21 +1,17 @@
 const mongoose = require('mongoose');
 mongoose.set('strictQuery', false);
 const bcrypt = require('bcryptjs');
+const { User } = require('./models');
 
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://wavfd_sched_mongo:27017/scheduler';
 
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['viewer', 'regular', 'admin'], default: 'regular' }
-});
-
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
-
 const seedAdminUser = async () => {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'your_super_secret_jwt_secret_change_me') {
+    console.warn('WARNING: JWT_SECRET is not set or using default value. Set a strong secret for production.');
+  }
+
   try {
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(MONGO_URI);
     console.log('MongoDB connected for seeding');
 
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';

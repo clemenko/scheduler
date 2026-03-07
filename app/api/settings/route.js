@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Setting from '@/lib/models/Setting';
+import AuditLog from '@/lib/models/AuditLog';
 import { requireAdmin } from '@/lib/auth';
 import { logError } from '@/lib/logger';
 
@@ -52,6 +53,11 @@ export async function PUT(request) {
       settings.logoUrl = logoUrl;
     }
     await settings.save();
+    await new AuditLog({
+      action: 'settings_updated',
+      performedBy: auth.user.id,
+      details: `Updated settings: title=${calendarTitle}`
+    }).save();
     return NextResponse.json(settings);
   } catch (err) {
     logError('PUT /api/settings', err);

@@ -51,23 +51,29 @@ export async function POST(request) {
       return NextResponse.json({ msg: 'Vehicle not found' }, { status: 404 });
     }
 
-    const signups = await Schedule.find({ shift: shiftId, vehicle: vehicleId });
-    if (signups.length >= vehicle.capacity) {
-      return NextResponse.json({ msg: 'This vehicle is full for this shift' }, { status: 400 });
-    }
-
     const existingSignup = await Schedule.findOne({ shift: shiftId, user: targetUserId });
     if (existingSignup) {
       return NextResponse.json({ msg: 'User already signed up for this shift' }, { status: 400 });
     }
 
-    const newSignup = new Schedule({
-      shift: shiftId,
-      user: targetUserId,
-      vehicle: vehicleId
-    });
+    const signupCount = await Schedule.countDocuments({ shift: shiftId, vehicle: vehicleId });
+    if (signupCount >= vehicle.capacity) {
+      return NextResponse.json({ msg: 'This vehicle is full for this shift' }, { status: 400 });
+    }
 
-    const signup = await newSignup.save();
+    let signup;
+    try {
+      signup = await Schedule.create({
+        shift: shiftId,
+        user: targetUserId,
+        vehicle: vehicleId
+      });
+    } catch (saveErr) {
+      if (saveErr.code === 11000) {
+        return NextResponse.json({ msg: 'User already signed up for this shift' }, { status: 400 });
+      }
+      throw saveErr;
+    }
 
     const targetUser = await User.findById(targetUserId);
     await new AuditLog({
@@ -94,7 +100,7 @@ export async function POST(request) {
         location: vehicle.name
       });
 
-      const formatOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' };
+      const formatOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' };
       const startStr = startDate.toLocaleString('en-US', formatOpts) + ' ET';
       const endStr = endDate.toLocaleString('en-US', formatOpts) + ' ET';
 

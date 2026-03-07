@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
+import AuditLog from '@/lib/models/AuditLog';
 import { requireAdmin } from '@/lib/auth';
 import { logError } from '@/lib/logger';
 
@@ -37,8 +38,17 @@ export async function PUT(request, { params }) {
       }
     }
 
+    const oldRole = user.role;
     user.role = role;
     await user.save();
+
+    await new AuditLog({
+      action: 'role_changed',
+      performedBy: auth.user.id,
+      targetUser: id,
+      userName: user.name,
+      details: `Changed role from ${oldRole} to ${role}`
+    }).save();
 
     const userToReturn = user.toObject();
     delete userToReturn.password;

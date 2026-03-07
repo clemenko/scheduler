@@ -40,7 +40,7 @@ export async function POST(request) {
       }
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 7200 });
     return NextResponse.json({ token });
   } catch (err) {
     logError('POST /api/auth/login', err);

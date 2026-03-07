@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button, TextField, Typography, Container, Alert } from '@mui/material';
+import { Button, TextField, Typography, Container, Alert, Link as MuiLink } from '@mui/material';
+import NextLink from 'next/link';
 import axios from 'axios';
 
 const Register = () => {
@@ -29,7 +30,7 @@ const Register = () => {
         Register
       </Typography>
       {error && <Alert severity="error">{error}</Alert>}
-      {success && <Alert severity="success">Registration successful! You can now log in.</Alert>}
+      {success && <Alert severity="success">Registration successful! <MuiLink component={NextLink} href="/login">Log in here</MuiLink>.</Alert>}
       <form onSubmit={handleSubmit}>
         <TextField
           label="Name"

@@ -1,6 +1,3 @@
-// Application timezone — all server-side time displays use EST/ET
-export const APP_TIMEZONE = 'America/New_York';
-
 export const fromNaiveUTC = (value) => {
   if (!value) return null;
   const d = new Date(value);

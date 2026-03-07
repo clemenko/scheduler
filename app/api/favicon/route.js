@@ -15,10 +15,14 @@ export async function GET() {
     // Parse base64 data URI: data:<mime>;base64,<data>
     const match = logoUrl.match(/^data:([^;]+);base64,(.+)$/);
     if (!match) {
-      return NextResponse.redirect(logoUrl);
+      return new NextResponse(null, { status: 400 });
     }
 
+    const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon'];
     const mimeType = match[1];
+    if (!allowedMimeTypes.includes(mimeType)) {
+      return new NextResponse(null, { status: 400 });
+    }
     const buffer = Buffer.from(match[2], 'base64');
 
     return new NextResponse(buffer, {

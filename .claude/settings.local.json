@@ -16,7 +16,8 @@
       "Bash(docker ps:*)",
       "Bash(docker inspect:*)",
       "WebSearch",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(grep:*)"
     ]
   }
 }

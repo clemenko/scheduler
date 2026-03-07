@@ -13,6 +13,11 @@ const AuthProvider = ({ children }) => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
+        if (decoded.exp && decoded.exp * 1000 <= Date.now()) {
+          localStorage.removeItem('token');
+          document.cookie = 'token=; path=/; max-age=0';
+          return;
+        }
         setUser(decoded.user);
       } catch (error) {
         console.error("Invalid token:", error);
@@ -22,35 +27,38 @@ const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
-
   const login = (token) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('loginTime', Date.now().toString());
-    document.cookie = `token=${token}; path=/; max-age=7200; SameSite=Lax`;
     const decoded = jwtDecode(token);
+    const maxAge = decoded.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 7200;
+    document.cookie = `token=${token}; path=/; max-age=${maxAge}; SameSite=Strict`;
     setUser(decoded.user);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('loginTime');
     document.cookie = 'token=; path=/; max-age=0';
     setUser(null);
   };
 
-  // Check session expiry on load and periodically
+  // Check JWT expiry on load and periodically
   useEffect(() => {
     const checkSession = () => {
-      const loginTime = localStorage.getItem('loginTime');
-      if (loginTime && Date.now() - parseInt(loginTime, 10) >= SESSION_TIMEOUT) {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const decoded = jwtDecode(token);
+        if (decoded.exp && decoded.exp * 1000 <= Date.now()) {
+          logout();
+          window.location.href = '/login';
+        }
+      } catch {
         logout();
-        window.location.href = '/login';
       }
     };
 
     checkSession();
-    const interval = setInterval(checkSession, 60 * 1000); // check every minute
+    const interval = setInterval(checkSession, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

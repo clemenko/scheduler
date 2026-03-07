@@ -5,6 +5,7 @@ import Shift from '@/lib/models/Shift';
 import Schedule from '@/lib/models/Schedule';
 import Vehicle from '@/lib/models/Vehicle';
 import User from '@/lib/models/User';
+import AuditLog from '@/lib/models/AuditLog';
 import { requireAuth } from '@/lib/auth';
 import validateShiftDates from '@/lib/validateShift';
 import sendEmail from '@/lib/email';
@@ -26,15 +27,15 @@ async function notifyDeletedShift(shiftIds) {
       if (!signup.user?.email) continue;
       const shift = shiftMap[signup.shift.toString()];
       if (!shift) continue;
-      const startStr = new Date(shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' ET';
+      const startStr = new Date(shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
       sendEmail({
         email: signup.user.email,
         subject: `Shift Cancelled: ${shift.title}`,
         message: `A shift you were signed up for has been cancelled.\n\nTitle: ${shift.title}\nStart: ${startStr}\n\nPlease check the schedule for updates.`
-      }).catch(err => console.error('Email error:', err));
+      }).catch(err => logError('shift-cancel email', err));
     }
   } catch (err) {
-    console.error('Error sending shift deletion emails:', err);
+    logError('notifyDeletedShift', err);
   }
 }
 
@@ -58,9 +59,9 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ msg: 'Shift not found' }, { status: 404 });
     }
 
-    // Only admins can update shifts
-    if (auth.user.role !== 'admin') {
-      return NextResponse.json({ msg: 'Only admins can edit shifts' }, { status: 403 });
+    // Admins or the shift creator can update shifts
+    if (auth.user.role !== 'admin' && shift.creator.toString() !== auth.user.id) {
+      return NextResponse.json({ msg: 'You can only edit your own shifts' }, { status: 403 });
     }
     if (shift.isRecurring) {
       return NextResponse.json({ msg: 'This is a recurring shift. Please update the entire series.' }, { status: 400 });
@@ -116,6 +117,13 @@ export async function DELETE(request, { params }) {
 
     await notifyDeletedShift([shift._id]);
     await Shift.deleteOne({ _id: id });
+    await new AuditLog({
+      action: 'shift_deleted',
+      performedBy: auth.user.id,
+      shiftTitle: shift.title,
+      shiftStart: shift.start_time,
+      details: `Deleted shift "${shift.title}"`
+    }).save();
 
     return NextResponse.json({ msg: 'Shift removed' });
   } catch (err) {

@@ -6,6 +6,7 @@ import Shift from '@/lib/models/Shift';
 import Schedule from '@/lib/models/Schedule';
 import User from '@/lib/models/User';
 import Vehicle from '@/lib/models/Vehicle';
+import AuditLog from '@/lib/models/AuditLog';
 import { requireAuth } from '@/lib/auth';
 import sendEmail from '@/lib/email';
 import { logError } from '@/lib/logger';
@@ -26,15 +27,15 @@ async function notifyDeletedShift(shiftIds) {
       if (!signup.user?.email) continue;
       const shift = shiftMap[signup.shift.toString()];
       if (!shift) continue;
-      const startStr = new Date(shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }) + ' ET';
+      const startStr = new Date(shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
       sendEmail({
         email: signup.user.email,
         subject: `Shift Cancelled: ${shift.title}`,
         message: `A shift you were signed up for has been cancelled.\n\nTitle: ${shift.title}\nStart: ${startStr}\n\nPlease check the schedule for updates.`
-      }).catch(err => console.error('Email error:', err));
+      }).catch(err => logError('shift-cancel email', err));
     }
   } catch (err) {
-    console.error('Error sending shift deletion emails:', err);
+    logError('notifyDeletedShift', err);
   }
 }
 
@@ -62,7 +63,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ msg: 'Shift series not found' }, { status: 404 });
     }
 
-    await Shift.deleteMany({ $or: [{ _id: parentShift._id }, { parentShift: parentShift._id }] });
+    const oldSeriesFilter = { $or: [{ _id: parentShift._id }, { parentShift: parentShift._id }] };
 
     const { frequency, daysOfWeek, dayOfMonth, endType, endDate, occurrences } = recurrenceRule;
     const rruleOptions = {
@@ -107,9 +108,12 @@ export async function PUT(request, { params }) {
       const result = await Shift.insertMany(createdShifts);
       const newParentId = result[0]._id;
       await Shift.updateMany({ _id: { $in: result.map(s => s._id) } }, { parentShift: newParentId });
+      // Delete old series only after new shifts are successfully created
+      await Shift.deleteMany(oldSeriesFilter);
       const newShifts = await Shift.find({ _id: { $in: result.map(s => s._id) } }).lean();
       return NextResponse.json(newShifts);
     } else {
+      await Shift.deleteMany(oldSeriesFilter);
       return NextResponse.json([]);
     }
   } catch (err) {
@@ -154,6 +158,14 @@ export async function DELETE(request, { params }) {
     } else {
       await Shift.deleteMany({ $or: [{ _id: id }, { parentShift: parentId }] });
     }
+
+    await new AuditLog({
+      action: 'shift_deleted',
+      performedBy: auth.user.id,
+      shiftTitle: shift.title,
+      shiftStart: shift.start_time,
+      details: `Deleted shift series "${shift.title}" (${seriesShifts.length} shifts)`
+    }).save();
 
     return NextResponse.json({ msg: 'Shift series removed' });
   } catch (err) {

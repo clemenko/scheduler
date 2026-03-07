@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/lib/models/User';
+import Schedule from '@/lib/models/Schedule';
+import AuditLog from '@/lib/models/AuditLog';
 import { requireAdmin } from '@/lib/auth';
 import { logError } from '@/lib/logger';
 
@@ -27,7 +29,15 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ msg: 'Cannot delete an admin user' }, { status: 400 });
     }
 
+    await Schedule.deleteMany({ user: id });
     await User.deleteOne({ _id: id });
+    await new AuditLog({
+      action: 'user_deleted',
+      performedBy: auth.user.id,
+      targetUser: id,
+      userName: user.name,
+      details: `Deleted user ${user.name} (${user.email})`
+    }).save();
     return NextResponse.json({ msg: 'User deleted' });
   } catch (err) {
     logError('DELETE /api/users/[id]', err);

@@ -3,9 +3,15 @@ import AuditLog from '@/lib/models/AuditLog';
 import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
 import { logError } from '@/lib/logger';
+import rateLimit from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 5 });
+
 export async function GET(request) {
+  const limited = limiter(request);
+  if (limited) return NextResponse.json(limited.error, { status: limited.status });
+
   const auth = requireAdmin(request);
   if (auth.error) return NextResponse.json(auth.error, { status: auth.status });
 
@@ -13,6 +19,7 @@ export async function GET(request) {
     await dbConnect();
     const logs = await AuditLog.find()
       .sort({ timestamp: -1 })
+      .limit(10000)
       .populate('performedBy', 'name')
       .populate('targetUser', 'name')
       .lean();

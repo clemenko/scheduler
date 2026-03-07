@@ -32,7 +32,7 @@ export async function DELETE(request, { params }) {
     }
 
     if (signup.user._id.toString() !== auth.user.id && auth.user.role !== 'admin') {
-      return NextResponse.json({ msg: 'Not authorized' }, { status: 401 });
+      return NextResponse.json({ msg: 'Not authorized' }, { status: 403 });
     }
 
     await Schedule.deleteOne({ _id: signupId });

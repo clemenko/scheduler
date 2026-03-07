@@ -70,9 +70,14 @@ const UserFormModal = ({ open, handleClose, onSave }) => {
               const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
               let result = '';
               const array = new Uint32Array(12);
+              const limit = Math.floor(0x100000000 / chars.length) * chars.length;
               crypto.getRandomValues(array);
               for (let i = 0; i < 12; i++) {
-                result += chars[array[i] % chars.length];
+                let val = array[i];
+                while (val >= limit) {
+                  val = crypto.getRandomValues(new Uint32Array(1))[0];
+                }
+                result += chars[val % chars.length];
               }
               setPassword(result);
               setGeneratedPassword(result);

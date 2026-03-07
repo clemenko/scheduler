@@ -6,6 +6,7 @@ import Shift from '@/lib/models/Shift';
 import Schedule from '@/lib/models/Schedule';
 import Vehicle from '@/lib/models/Vehicle';
 import User from '@/lib/models/User';
+import AuditLog from '@/lib/models/AuditLog';
 import { requireAuth } from '@/lib/auth';
 import validateShiftDates from '@/lib/validateShift';
 import sendEmail from '@/lib/email';
@@ -19,7 +20,7 @@ async function notifyNewShift(title, start_time, end_time, vehicleId) {
       const v = await Vehicle.findById(vehicleId, 'name').lean();
       if (v) vehicleName = v.name;
     }
-    const fmtOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC' };
+    const fmtOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' };
     const startStr = new Date(start_time).toLocaleString('en-US', fmtOpts) + ' ET';
     const endStr = new Date(end_time).toLocaleString('en-US', fmtOpts) + ' ET';
     const vehicleInfo = vehicleName ? `\nVehicle: ${vehicleName}` : '';
@@ -29,10 +30,10 @@ async function notifyNewShift(title, start_time, end_time, vehicleId) {
         email: u.email,
         subject: `New Shift: ${title}`,
         message: `A new shift has been created.\n\nTitle: ${title}\nStart: ${startStr}\nEnd: ${endStr}${vehicleInfo}`
-      }).catch(err => console.error('Email error:', err));
+      }).catch(err => logError('new-shift email', err));
     }
   } catch (err) {
-    console.error('Error sending new shift emails:', err);
+    logError('notifyNewShift', err);
   }
 }
 
@@ -138,6 +139,14 @@ export async function POST(request) {
         const result = await Shift.insertMany(createdShifts);
         const parentId = result[0]._id;
         await Shift.updateMany({ _id: { $in: result.map(s => s._id) } }, { parentShift: parentId });
+        await new AuditLog({
+          action: 'shift_created',
+          performedBy: auth.user.id,
+          shift: parentId,
+          shiftTitle: title,
+          shiftStart: new Date(start_time),
+          details: `Created recurring shift series "${title}" (${result.length} occurrences)`
+        }).save();
         notifyNewShift(title, start_time, end_time, vehicle);
         return NextResponse.json(result);
       } else {
@@ -157,6 +166,14 @@ export async function POST(request) {
         ...(vehicle ? { vehicle } : {})
       });
       const shift = await newShift.save();
+      await new AuditLog({
+        action: 'shift_created',
+        performedBy: auth.user.id,
+        shift: shift._id,
+        shiftTitle: title,
+        shiftStart: new Date(start_time),
+        details: `Created shift "${title}"`
+      }).save();
       notifyNewShift(title, start_time, end_time, vehicle);
       return NextResponse.json(shift);
     }
