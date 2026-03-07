@@ -34,7 +34,7 @@ const MyShifts = () => {
       setShifts(res.data);
     } catch (err) {
       setError('Failed to load shifts');
-      console.error(err);
+      console.error('Failed to fetch my shifts:', err);
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ const MyShifts = () => {
       fetchMyShifts();
     } catch (err) {
       setError('Failed to cancel signup');
-      console.error(err);
+      console.error('Failed to cancel signup:', err);
     }
   };
 

@@ -1,8 +1,12 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import cron from 'node-cron';
+import Shift from '../lib/models/Shift.js';
+import Schedule from '../lib/models/Schedule.js';
+import User from '../lib/models/User.js';
+import Vehicle from '../lib/models/Vehicle.js';
+import sendEmail from '../lib/email.js';
+
 mongoose.set('strictQuery', false);
-const cron = require('node-cron');
-const { Shift, Schedule, User, Vehicle } = require('./models');
-const sendEmail = require('./email');
 
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://wavfd_sched_mongo:27017/scheduler';
 

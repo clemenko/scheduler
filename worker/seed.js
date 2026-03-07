@@ -1,7 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import User from '../lib/models/User.js';
+
 mongoose.set('strictQuery', false);
-const bcrypt = require('bcryptjs');
-const { User } = require('./models');
 
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb://wavfd_sched_mongo:27017/scheduler';
 

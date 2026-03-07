@@ -21,7 +21,7 @@ const MonthlyReport = () => {
       });
       setReport(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to generate monthly report:', err);
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ const MonthlyReport = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to download monthly report CSV:', err);
     }
   };
 

@@ -17,7 +17,9 @@
       "Bash(docker inspect:*)",
       "WebSearch",
       "Bash(npx next:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(./node_modules/.bin/next build:*)"
     ]
   }
 }

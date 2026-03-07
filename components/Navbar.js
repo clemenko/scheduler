@@ -41,7 +41,7 @@ const Navbar = () => {
           link.href = '/api/favicon';
         }
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch settings:', err);
       }
     };
     fetchSettings();

@@ -107,12 +107,17 @@ export async function POST(request) {
         rruleOptions.bymonthday = dayOfMonth;
       }
 
+      const maxEnd = new Date(start_time);
+      maxEnd.setMonth(maxEnd.getMonth() + 6);
+
       if (endType === 'on_date' && endDate) {
-        rruleOptions.until = new Date(endDate);
+        const requested = new Date(endDate);
+        rruleOptions.until = requested < maxEnd ? requested : maxEnd;
       } else if (endType === 'after_occurrences' && occurrences) {
         rruleOptions.count = occurrences;
+        rruleOptions.until = maxEnd;
       } else {
-        rruleOptions.count = 365;
+        rruleOptions.until = maxEnd;
       }
 
       const rule = new RRule(rruleOptions);

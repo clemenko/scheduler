@@ -41,7 +41,7 @@ const Calendar = () => {
         const res = await axios.get('/api/settings');
         if (res.data.headerColor) setHeaderColor(res.data.headerColor);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch settings:', err);
       }
     };
     fetchSettings();

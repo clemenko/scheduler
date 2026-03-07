@@ -40,7 +40,7 @@ const SettingsManagement = ({ showSnackbar }) => {
         if (res.data.headerColor) setHeaderColor(res.data.headerColor);
         if (res.data.logoUrl) setLogoUrl(res.data.logoUrl);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch settings:', err);
       }
     };
     fetchSettings();
@@ -55,7 +55,7 @@ const SettingsManagement = ({ showSnackbar }) => {
       });
       showSnackbar('Settings saved successfully!', 'success');
     } catch (err) {
-      console.error(err);
+      console.error('Failed to save settings:', err);
       showSnackbar('Error saving settings.', 'error');
     }
   };

@@ -19,6 +19,18 @@ export async function middleware(request) {
     }
   }
 
+  // Log request to stdout
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const method = request.method;
+  const userInfo = user ? `${user.name} (${user.email})` : 'anonymous';
+  console.log(JSON.stringify({
+    ts: new Date().toISOString(),
+    method,
+    path: pathname,
+    user: userInfo,
+    ip,
+  }));
+
   // Protect authenticated routes
   if (protectedPaths.some(p => pathname.startsWith(p))) {
     if (!user) {
@@ -40,5 +52,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/my-shifts', '/change-password', '/admin', '/login', '/register'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

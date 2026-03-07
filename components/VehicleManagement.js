@@ -40,7 +40,7 @@ const VehicleManagement = () => {
       const res = await axios.get('/api/vehicles');
       setVehicles(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch vehicles:', err);
     }
   };
 
@@ -67,7 +67,7 @@ const VehicleManagement = () => {
       });
       fetchVehicles();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to delete vehicle:', err);
     }
   };
 

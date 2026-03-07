@@ -19,7 +19,7 @@ const Login = () => {
         const res = await axios.get('/api/settings');
         setAllowRegistration(res.data.allowRegistration !== false);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch settings:', err);
       }
     };
     fetchSettings();

@@ -45,7 +45,7 @@ const UserManagement = ({ showSnackbar }) => {
       });
       setUsers(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch users:', err);
     }
   };
 
@@ -68,7 +68,7 @@ const UserManagement = ({ showSnackbar }) => {
       closeResetModal();
       showSnackbar('Password reset successfully.', 'success');
     } catch (err) {
-      console.error(err);
+      console.error('Failed to reset password:', err);
       showSnackbar('Error resetting password.', 'error');
     }
   };
@@ -81,7 +81,7 @@ const UserManagement = ({ showSnackbar }) => {
       fetchUsers();
       showSnackbar('User deleted successfully.', 'success');
     } catch (err) {
-      console.error(err.response?.data?.msg || err);
+      console.error('Failed to delete user:', err.response?.data?.msg || err);
       showSnackbar(err.response?.data?.msg || 'Error deleting user.', 'error');
     }
   };
@@ -93,7 +93,7 @@ const UserManagement = ({ showSnackbar }) => {
       setUserFormModalOpen(false);
       showSnackbar('User added successfully.', 'success');
     } catch (err) {
-      console.error(err.response?.data?.msg || err);
+      console.error('Failed to add user:', err.response?.data?.msg || err);
       showSnackbar(err.response?.data?.msg || 'Error adding user.', 'error');
     }
   };
@@ -106,7 +106,7 @@ const UserManagement = ({ showSnackbar }) => {
       setUsers(users.map(u => u._id === userId ? res.data : u));
       showSnackbar('User role updated successfully.', 'success');
     } catch (err) {
-      console.error(err.response?.data?.msg || err);
+      console.error('Failed to update user role:', err.response?.data?.msg || err);
       showSnackbar(err.response?.data?.msg || 'Error updating user role.', 'error');
     }
   };

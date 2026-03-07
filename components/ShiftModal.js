@@ -33,7 +33,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
         const res = await axios.get('/api/vehicles');
         setVehicles(res.data);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch vehicles:', err);
       }
     };
     const fetchUsers = async () => {
@@ -43,7 +43,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
         });
         setUsers(res.data);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch users:', err);
       }
     };
     if (open) {
@@ -69,7 +69,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
       alert('You have successfully signed up for the shift!');
       handleClose();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to sign up for shift:', err);
     }
   };
 
@@ -85,7 +85,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
       });
       handleClose();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to delete shift:', err);
       alert(err.response?.data?.msg || 'Error deleting shift.');
     }
   };
@@ -100,7 +100,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
       alert('Signup canceled successfully.');
       handleClose();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to cancel signup:', err);
       alert('Error canceling signup.');
     }
   };

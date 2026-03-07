@@ -54,7 +54,7 @@ const VehicleFormModal = ({ open, handleClose, currentVehicle, onSave }) => {
       onSave();
       handleClose();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to save vehicle:', err);
     }
   };
 

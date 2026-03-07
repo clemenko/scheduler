@@ -93,7 +93,7 @@ const ShiftManagement = () => {
       });
       fetchShifts();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to delete shift:', err);
     }
   };
 
@@ -107,7 +107,7 @@ const ShiftManagement = () => {
       fetchShifts();
       handleDeleteDialogClose();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to delete shift series:', err);
     }
   };
 

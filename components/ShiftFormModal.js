@@ -46,7 +46,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
           const res = await axios.get('/api/vehicles');
           setVehicles(res.data);
         } catch (err) {
-          console.error(err);
+          console.error('Failed to fetch vehicles:', err);
         }
       };
       fetchVehicles();
@@ -146,7 +146,7 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
       document.activeElement?.blur();
       handleClose();
     } catch (err) {
-      console.error(err);
+      console.error('Failed to save shift:', err);
       setFormError(err.response?.data?.msg || 'An error occurred while saving the shift.');
     }
   };

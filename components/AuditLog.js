@@ -27,7 +27,7 @@ const AuditLog = () => {
         setTotal(res.data.total);
       } catch (err) {
         setError('Failed to load audit logs');
-        console.error(err);
+        console.error('Failed to fetch audit logs:', err);
       } finally {
         setLoading(false);
       }
@@ -110,7 +110,7 @@ const AuditLog = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to export audit log CSV:', err);
     }
   };
 
