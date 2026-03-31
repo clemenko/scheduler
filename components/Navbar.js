@@ -3,7 +3,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -76,73 +76,84 @@ const Navbar = () => {
         <IconButton color="inherit" onClick={toggleMode} aria-label="toggle dark mode" sx={{ mr: 1 }}>
           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>
-        {user ? (
-          <>
-            <Typography sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
-              {user.email}
-            </Typography>
-            <IconButton
-              size="large"
-              edge="end"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleMenu}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={open}
-              onClose={handleClose}
-            >
-              <MenuItem
-                disabled={pathname === '/' && view === 'calendar'}
-                onClick={() => {
-                  setView('calendar');
-                  router.push('/');
-                  handleClose();
-                }}
-              >Calendar View</MenuItem>
-              <MenuItem
-                disabled={pathname === '/' && view === 'table'}
-                onClick={() => {
-                  setView('table');
-                  router.push('/');
-                  handleClose();
-                }}
-              >Table View</MenuItem>
-              <MenuItem component={Link} href="/my-shifts" onClick={handleClose}>
-                My Shifts
-              </MenuItem>
-              <MenuItem component={Link} href="/change-password" onClick={handleClose}>
-                Change Password
-              </MenuItem>
-              {user.role === 'admin' && (
-                <MenuItem component={Link} href="/admin" onClick={handleClose}>
-                  Admin
-                </MenuItem>
-              )}
-              <MenuItem onClick={() => {
-                handleLogout();
-                handleClose();
-              }}>Logout</MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Button color="inherit" component={Link} href="/login">
-            Login
-          </Button>
+        {user && (
+          <Typography sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
+            {user.email}
+          </Typography>
         )}
+        <IconButton
+          size="large"
+          edge="end"
+          color="inherit"
+          aria-label="menu"
+          onClick={handleMenu}
+        >
+          <MenuIcon />
+        </IconButton>
+        <Menu
+          id="menu-appbar"
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          open={open}
+          onClose={handleClose}
+        >
+          <MenuItem component={Link} href="/about" onClick={handleClose}>
+            About
+          </MenuItem>
+          {user && (
+            <MenuItem
+              disabled={pathname === '/' && view === 'calendar'}
+              onClick={() => {
+                setView('calendar');
+                router.push('/');
+                handleClose();
+              }}
+            >Calendar View</MenuItem>
+          )}
+          {user && (
+            <MenuItem
+              disabled={pathname === '/' && view === 'table'}
+              onClick={() => {
+                setView('table');
+                router.push('/');
+                handleClose();
+              }}
+            >Table View</MenuItem>
+          )}
+          {user && (
+            <MenuItem component={Link} href="/my-shifts" onClick={handleClose}>
+              My Shifts
+            </MenuItem>
+          )}
+          {user && (
+            <MenuItem component={Link} href="/change-password" onClick={handleClose}>
+              Change Password
+            </MenuItem>
+          )}
+          {user?.role === 'admin' && (
+            <MenuItem component={Link} href="/admin" onClick={handleClose}>
+              Admin
+            </MenuItem>
+          )}
+          {user ? (
+            <MenuItem onClick={() => {
+              handleLogout();
+              handleClose();
+            }}>Logout</MenuItem>
+          ) : (
+            <MenuItem component={Link} href="/login" onClick={handleClose}>
+              Login
+            </MenuItem>
+          )}
+        </Menu>
       </Toolbar>
     </AppBar>
   );

@@ -18,7 +18,6 @@ COPY --from=build /app/lib ./lib
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules/node-cron ./node_modules/node-cron
 COPY --from=build /app/node_modules/nodemailer ./node_modules/nodemailer
-COPY --from=build /app/node_modules/uuid ./node_modules/uuid
 COPY --from=build /app/node_modules/bcryptjs ./node_modules/bcryptjs
 ENV HOSTNAME=0.0.0.0
 ENV NODE_OPTIONS=--no-deprecation
