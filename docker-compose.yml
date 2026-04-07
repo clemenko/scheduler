@@ -21,6 +21,7 @@ services:
       - SMTP_TLS_REJECT_UNAUTHORIZED=${SMTP_TLS_REJECT_UNAUTHORIZED:-true}
       - GMAIL_USER=${GMAIL_USER:-}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
+      - SITE_URL=${SITE_URL:-https://sched.wavfd.org}
     depends_on:
       - wavfd_sched_mongo
     healthcheck:

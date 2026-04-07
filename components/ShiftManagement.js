@@ -6,7 +6,7 @@ import axios from 'axios';
 import ShiftFormModal from '@/components/ShiftFormModal';
 import ShiftModal from '@/components/ShiftModal';
 import { ShiftContext } from '@/context/ShiftContext';
-import { fromNaiveUTC } from '@/utils/dateUtils';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 const ShiftManagement = () => {
   const { shifts, fetchShifts } = useContext(ShiftContext);
@@ -165,8 +165,8 @@ const ShiftManagement = () => {
                 onClick={() => { setSelectedShift(shift); setDetailModalOpen(true); }}
               >
                 <TableCell>{shift.title}</TableCell>
-                <TableCell>{fromNaiveUTC(shift.start_time)?.toLocaleString()}</TableCell>
-                <TableCell>{fromNaiveUTC(shift.end_time)?.toLocaleString()}</TableCell>
+                <TableCell>{formatShiftTime(shift.start_time)}</TableCell>
+                <TableCell>{formatShiftTime(shift.end_time)}</TableCell>
                 <TableCell>{shift.vehicle?.name || ''}</TableCell>
                 <TableCell>{shift.creator?.name}</TableCell>
                 <TableCell>

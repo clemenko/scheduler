@@ -5,6 +5,7 @@ import Schedule from '../lib/models/Schedule.js';
 import User from '../lib/models/User.js';
 import Vehicle from '../lib/models/Vehicle.js';
 import sendEmail from '../lib/email.js';
+import { formatShiftTime } from '../utils/dateUtils.js';
 
 mongoose.set('strictQuery', false);
 
@@ -40,9 +41,7 @@ mongoose.connect(MONGO_URI)
 
         for (const { user, shifts } of Object.values(byUser)) {
           const lines = shifts.map(s => {
-            const date = new Date(s.shift.start_time).toLocaleDateString('en-US', {
-              weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
-            });
+            const date = formatShiftTime(s.shift.start_time);
             const vehicle = s.vehicle ? ` — ${s.vehicle.name}` : '';
             return `  • ${s.shift.title} on ${date}${vehicle}`;
           });
@@ -82,9 +81,7 @@ mongoose.connect(MONGO_URI)
 
         for (const schedule of schedules) {
           if (!schedule.user || !schedule.user.email) continue;
-          const startTime = new Date(schedule.shift.start_time).toLocaleTimeString('en-US', {
-            hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
-          });
+          const startTime = formatShiftTime(schedule.shift.start_time);
           const vehicle = schedule.vehicle ? ` on ${schedule.vehicle.name}` : '';
           await sendEmail({
             email: schedule.user.email,

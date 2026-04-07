@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Card, CardContent, Grid } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import axios from 'axios';
-import { fromNaiveUTC } from '@/utils/dateUtils';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 const MonthlyReport = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -124,8 +124,8 @@ const MonthlyReport = () => {
                   report.signups.map((row, idx) => (
                     <TableRow key={idx}>
                       <TableCell>{row.shiftTitle}</TableCell>
-                      <TableCell>{fromNaiveUTC(row.shiftStart)?.toLocaleString()}</TableCell>
-                      <TableCell>{fromNaiveUTC(row.shiftEnd)?.toLocaleString()}</TableCell>
+                      <TableCell>{formatShiftTime(row.shiftStart)}</TableCell>
+                      <TableCell>{formatShiftTime(row.shiftEnd)}</TableCell>
                       <TableCell>{row.userName}</TableCell>
                       <TableCell>{row.vehicleName}</TableCell>
                     </TableRow>

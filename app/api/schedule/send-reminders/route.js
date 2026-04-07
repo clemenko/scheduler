@@ -6,6 +6,7 @@ import User from '@/lib/models/User';
 import { requireAdmin } from '@/lib/auth';
 import sendEmail from '@/lib/email';
 import { logError } from '@/lib/logger';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 export async function POST(request) {
   const auth = requireAdmin(request);
@@ -25,7 +26,7 @@ export async function POST(request) {
       const emailOptions = {
         email: schedule.user.email,
         subject: 'Shift Reminder',
-        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${new Date(schedule.shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })} ET.`
+        message: `This is a reminder that you are signed up for the shift: ${schedule.shift.title}. It starts at ${formatShiftTime(schedule.shift.start_time)}.`
       };
       try {
         await sendEmail(emailOptions);

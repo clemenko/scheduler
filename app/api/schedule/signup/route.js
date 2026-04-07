@@ -10,6 +10,7 @@ import { requireAuth } from '@/lib/auth';
 import { logError } from '@/lib/logger';
 import sendEmail from '@/lib/email';
 import { generateICS } from '@/lib/ics';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -90,8 +91,6 @@ export async function POST(request) {
 
     // Fire-and-forget confirmation email with ICS attachment
     if (targetUser?.email) {
-      const startDate = new Date(shift.start_time);
-      const endDate = new Date(shift.end_time);
       const icsContent = generateICS({
         title: shift.title,
         start: shift.start_time,
@@ -100,9 +99,8 @@ export async function POST(request) {
         location: vehicle.name
       });
 
-      const formatOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' };
-      const startStr = startDate.toLocaleString('en-US', formatOpts) + ' ET';
-      const endStr = endDate.toLocaleString('en-US', formatOpts) + ' ET';
+      const startStr = formatShiftTime(shift.start_time);
+      const endStr = formatShiftTime(shift.end_time);
 
       sendEmail({
         email: targetUser.email,

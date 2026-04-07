@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, TableSortLabel, TablePagination } from '@mui/material';
 import axios from 'axios';
-import { fromNaiveUTC } from '@/utils/dateUtils';
+import { formatShiftTime, formatInstant } from '@/utils/dateUtils';
 
 const AuditLog = () => {
   const [logs, setLogs] = useState([]);
@@ -143,11 +143,11 @@ const AuditLog = () => {
           <TableBody>
             {sortedLogs.map((log) => (
               <TableRow key={log._id}>
-                <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                <TableCell>{formatInstant(log.timestamp)}</TableCell>
                 <TableCell>{log.action}</TableCell>
                 <TableCell>{log.targetUser?.name || log.userName}</TableCell>
                 <TableCell>{log.shiftTitle}</TableCell>
-                <TableCell>{fromNaiveUTC(log.shiftStart)?.toLocaleString()}</TableCell>
+                <TableCell>{formatShiftTime(log.shiftStart)}</TableCell>
                 <TableCell>{log.vehicleName}</TableCell>
                 <TableCell>{log.performedBy?.name}</TableCell>
               </TableRow>

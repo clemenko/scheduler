@@ -4,7 +4,7 @@ import React, { useContext, useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
 import { ShiftContext } from '@/context/ShiftContext';
 import ShiftModal from '@/components/ShiftModal';
-import { fromNaiveUTC } from '@/utils/dateUtils';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 const TableView = () => {
   const { shifts, fetchShifts } = useContext(ShiftContext);
@@ -91,8 +91,8 @@ const TableView = () => {
               onClick={() => { setSelectedShift(shift); setModalOpen(true); }}
             >
               <TableCell>{shift.title}</TableCell>
-              <TableCell>{fromNaiveUTC(shift.start_time)?.toLocaleString()}</TableCell>
-              <TableCell>{fromNaiveUTC(shift.end_time)?.toLocaleString()}</TableCell>
+              <TableCell>{formatShiftTime(shift.start_time)}</TableCell>
+              <TableCell>{formatShiftTime(shift.end_time)}</TableCell>
               <TableCell>{shift.vehicle?.name || ''}</TableCell>
               <TableCell>{shift.creator?.name}</TableCell>
             </TableRow>

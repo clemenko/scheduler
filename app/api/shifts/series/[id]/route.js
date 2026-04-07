@@ -10,6 +10,7 @@ import AuditLog from '@/lib/models/AuditLog';
 import { requireAuth } from '@/lib/auth';
 import sendEmail from '@/lib/email';
 import { logError } from '@/lib/logger';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -27,7 +28,7 @@ async function notifyDeletedShift(shiftIds) {
       if (!signup.user?.email) continue;
       const shift = shiftMap[signup.shift.toString()];
       if (!shift) continue;
-      const startStr = new Date(shift.start_time).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
+      const startStr = formatShiftTime(shift.start_time);
       sendEmail({
         email: signup.user.email,
         subject: `Shift Cancelled: ${shift.title}`,

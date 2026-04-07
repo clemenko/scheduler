@@ -11,6 +11,7 @@ import { requireAuth } from '@/lib/auth';
 import validateShiftDates from '@/lib/validateShift';
 import sendEmail from '@/lib/email';
 import { logError } from '@/lib/logger';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 async function notifyNewShift(title, start_time, end_time, vehicleId) {
   try {
@@ -20,9 +21,8 @@ async function notifyNewShift(title, start_time, end_time, vehicleId) {
       const v = await Vehicle.findById(vehicleId, 'name').lean();
       if (v) vehicleName = v.name;
     }
-    const fmtOpts = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' };
-    const startStr = new Date(start_time).toLocaleString('en-US', fmtOpts) + ' ET';
-    const endStr = new Date(end_time).toLocaleString('en-US', fmtOpts) + ' ET';
+    const startStr = formatShiftTime(start_time);
+    const endStr = formatShiftTime(end_time);
     const vehicleInfo = vehicleName ? `\nVehicle: ${vehicleName}` : '';
     for (const u of users) {
       if (!u.email) continue;

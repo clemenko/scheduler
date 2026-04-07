@@ -9,7 +9,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
-import { fromNaiveUTC } from '@/utils/dateUtils';
+import { formatShiftTime } from '@/utils/dateUtils';
 import ShiftFormModal from '@/components/ShiftFormModal';
 import { AuthContext } from '@/context/AuthContext';
 
@@ -151,8 +151,8 @@ const MyShifts = () => {
               sortedShifts.map((signup) => (
                 <TableRow key={signup._id}>
                   <TableCell>{signup.shift?.title}</TableCell>
-                  <TableCell>{fromNaiveUTC(signup.shift?.start_time)?.toLocaleString()}</TableCell>
-                  <TableCell>{fromNaiveUTC(signup.shift?.end_time)?.toLocaleString()}</TableCell>
+                  <TableCell>{formatShiftTime(signup.shift?.start_time)}</TableCell>
+                  <TableCell>{formatShiftTime(signup.shift?.end_time)}</TableCell>
                   <TableCell>{signup.vehicle?.name}</TableCell>
                   <TableCell align="right">
                     {user?.role === 'admin' && (

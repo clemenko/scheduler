@@ -4,7 +4,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Modal, Box, Typography, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
 import { AuthContext } from '@/context/AuthContext';
-import { fromNaiveUTC } from '@/utils/dateUtils';
+import { formatShiftTime } from '@/utils/dateUtils';
 
 const style = {
   position: 'absolute',
@@ -120,7 +120,7 @@ const ShiftModal = ({ open, handleClose, shift, onEdit }) => {
           )}
         </Box>
         <Typography sx={{ mt: 2 }}>
-          {fromNaiveUTC(shift?.start_time)?.toLocaleString()} - {fromNaiveUTC(shift?.end_time)?.toLocaleString()}
+          {formatShiftTime(shift?.start_time)} - {formatShiftTime(shift?.end_time)}
         </Typography>
         {shift?.vehicle?.name && (
           <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
