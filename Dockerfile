@@ -22,6 +22,7 @@ COPY --from=build /app/node_modules/nodemailer ./node_modules/nodemailer
 COPY --from=build /app/node_modules/bcryptjs ./node_modules/bcryptjs
 ENV HOSTNAME=0.0.0.0
 ENV NODE_OPTIONS=--no-deprecation
+ENV NEXT_TELEMETRY_DISABLED=1
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -q --spider http://127.0.0.1:3000/api/health || exit 1
