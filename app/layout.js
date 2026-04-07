@@ -5,6 +5,11 @@ import AppShell from '@/components/AppShell';
 export const metadata = {
   title: 'WAVFD Scheduler',
   description: 'Fire Department Shift Scheduler',
+  icons: {
+    icon: '/api/favicon',
+    shortcut: '/api/favicon',
+    apple: '/api/favicon',
+  },
 };
 
 export default function RootLayout({ children }) {
