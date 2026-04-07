@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS build
+FROM node:22-slim AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -8,7 +8,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Production stage
-FROM node:22-alpine
+FROM node:22-slim
+RUN apt-get update && apt-get install -y --no-install-recommends wget tzdata && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
