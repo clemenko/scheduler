@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useContext, useState, useMemo } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel, Typography, Box } from '@mui/material';
 import { ShiftContext } from '@/context/ShiftContext';
 import ShiftModal from '@/components/ShiftModal';
 import { formatShiftTime } from '@/utils/dateUtils';
@@ -58,19 +58,19 @@ const TableView = () => {
   const columns = [
     { id: 'title', label: 'Title' },
     { id: 'start_time', label: 'Start Time' },
-    { id: 'end_time', label: 'End Time' },
-    { id: 'vehicle', label: 'Vehicle' },
-    { id: 'creator', label: 'Creator' },
+    { id: 'end_time', label: 'End Time', sx: { display: { xs: 'none', sm: 'table-cell' } } },
+    { id: 'vehicle', label: 'Vehicle', sx: { display: { xs: 'none', md: 'table-cell' } } },
+    { id: 'creator', label: 'Creator', sx: { display: { xs: 'none', md: 'table-cell' } } },
   ];
 
   return (
   <>
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ overflowX: 'auto' }}>
       <Table size="small">
         <TableHead>
           <TableRow>
             {columns.map((col) => (
-              <TableCell key={col.id}>
+              <TableCell key={col.id} sx={col.sx}>
                 <TableSortLabel
                   active={sortField === col.id}
                   direction={sortField === col.id ? sortDirection : 'asc'}
@@ -83,20 +83,32 @@ const TableView = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortedShifts.map((shift) => (
-            <TableRow
-              key={shift._id}
-              hover
-              sx={{ cursor: 'pointer' }}
-              onClick={() => { setSelectedShift(shift); setModalOpen(true); }}
-            >
-              <TableCell>{shift.title}</TableCell>
-              <TableCell>{formatShiftTime(shift.start_time)}</TableCell>
-              <TableCell>{formatShiftTime(shift.end_time)}</TableCell>
-              <TableCell>{shift.vehicle?.name || ''}</TableCell>
-              <TableCell>{shift.creator?.name}</TableCell>
+          {sortedShifts.length > 0 ? (
+            sortedShifts.map((shift) => (
+              <TableRow
+                key={shift._id}
+                hover
+                sx={{ cursor: 'pointer' }}
+                onClick={() => { setSelectedShift(shift); setModalOpen(true); }}
+              >
+                <TableCell>{shift.title}</TableCell>
+                <TableCell>{formatShiftTime(shift.start_time)}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{formatShiftTime(shift.end_time)}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{shift.vehicle?.name || ''}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{shift.creator?.name}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} align="center">
+                <Box sx={{ py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No shifts scheduled yet.
+                  </Typography>
+                </Box>
+              </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </TableContainer>

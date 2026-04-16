@@ -11,18 +11,19 @@ import ShiftModal from '@/components/ShiftModal';
 import ShiftFormModal from '@/components/ShiftFormModal';
 import { ShiftContext } from '@/context/ShiftContext';
 import { AuthContext } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
 import { fromNaiveUTC } from '@/utils/dateUtils';
 
 const Calendar = () => {
   const { shifts, fetchShifts } = useContext(ShiftContext);
   const { user } = useContext(AuthContext);
+  const { settings } = useSettings();
   const [selectedShift, setSelectedShift] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [editShift, setEditShift] = useState(null);
   const calendarRef = useRef(null);
   const [calendarHeight, setCalendarHeight] = useState(600);
-  const [headerColor, setHeaderColor] = useState('#1976d2');
 
   const updateHeight = useCallback(() => {
     const offset = calendarRef.current?.getBoundingClientRect().top || 0;
@@ -31,21 +32,17 @@ const Calendar = () => {
 
   useEffect(() => {
     updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
-  }, [updateHeight]);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await axios.get('/api/settings');
-        if (res.data.headerColor) setHeaderColor(res.data.headerColor);
-      } catch (err) {
-        console.error('Failed to fetch settings:', err);
-      }
+    let timeout;
+    const debouncedUpdate = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(updateHeight, 150);
     };
-    fetchSettings();
-  }, []);
+    window.addEventListener('resize', debouncedUpdate);
+    return () => {
+      window.removeEventListener('resize', debouncedUpdate);
+      clearTimeout(timeout);
+    };
+  }, [updateHeight]);
 
   useEffect(() => {
     const styleId = 'fc-today-highlight';
@@ -55,9 +52,9 @@ const Calendar = () => {
       style.id = styleId;
       document.head.appendChild(style);
     }
-    style.textContent = `.fc-day-today { background-color: ${headerColor}1A !important; }`;
+    style.textContent = `.fc-day-today { background-color: ${settings.headerColor}1A !important; }`;
     return () => { if (style.parentNode) style.parentNode.removeChild(style); };
-  }, [headerColor]);
+  }, [settings.headerColor]);
 
   const formattedShifts = useMemo(() => shifts.map(shift => ({
     title: shift.title,

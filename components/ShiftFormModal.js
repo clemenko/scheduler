@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, Typography, Button, TextField, Checkbox, FormControlLabel, Select, MenuItem, InputLabel, FormControl, FormGroup } from '@mui/material';
+import { Modal, Box, Typography, Button, TextField, Checkbox, FormControlLabel, Select, MenuItem, InputLabel, FormControl, FormGroup, Alert } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import axios from 'axios';
 import { fromNaiveUTC, toNaiveUTC } from '@/utils/dateUtils';
@@ -13,7 +13,7 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: { xs: '95%', sm: 500 },
   bgcolor: 'background.paper',
-  border: '2px solid #000',
+  borderRadius: 2,
   boxShadow: 24,
   p: 4,
   maxHeight: '90vh',
@@ -157,6 +157,9 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
         <Typography variant="h6" component="h2">
           {currentShift ? (isRecurring ? 'Edit Shift Series' : 'Edit Shift') : 'Add Shift'}
         </Typography>
+        {formError && (
+          <Alert severity="error" sx={{ mt: 1, mb: 1 }}>{formError}</Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <TextField label="Title" fullWidth margin="normal" value={title} onChange={(e) => setTitle(e.target.value)} required />
           <DateTimePicker
@@ -240,12 +243,6 @@ const ShiftFormModal = ({ open, handleClose, currentShift, onSave }) => {
                 <TextField label="Occurrences" type="number" name="occurrences" value={recurrenceRule.occurrences} onChange={handleRecurrenceChange} fullWidth margin="normal" />
               )}
             </>
-          )}
-
-          {formError && (
-            <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-              {formError}
-            </Typography>
           )}
 
           <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>

@@ -98,6 +98,7 @@ const SettingsManagement = ({ showSnackbar }) => {
           type="color"
           value={headerColor}
           onChange={(e) => setHeaderColor(e.target.value)}
+          aria-label="Header color"
           style={{ width: 60, height: 36, border: 'none', cursor: 'pointer', padding: 0 }}
         />
         <Typography variant="body2" color="textSecondary">{headerColor}</Typography>

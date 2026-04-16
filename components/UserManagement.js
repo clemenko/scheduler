@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Select, MenuItem, FormControl, TableSortLabel } from '@mui/material';
+import { Typography, Button, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Select, MenuItem, FormControl, TableSortLabel, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import ResetPasswordModal from '@/components/ResetPasswordModal';
@@ -14,6 +14,7 @@ const UserManagement = ({ showSnackbar }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [userFormModalOpen, setUserFormModalOpen] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, user: null });
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
 
@@ -73,7 +74,14 @@ const UserManagement = ({ showSnackbar }) => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteClick = (user) => {
+    setDeleteDialog({ open: true, user });
+  };
+
+  const handleDeleteConfirm = async () => {
+    const userId = deleteDialog.user?._id;
+    setDeleteDialog({ open: false, user: null });
+    if (!userId) return;
     try {
       await axios.delete(`/api/users/${userId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -155,7 +163,7 @@ const UserManagement = ({ showSnackbar }) => {
                 </TableCell>
                 <TableCell>
                   <Button onClick={() => openResetModal(user)}>Reset Password</Button>
-                  <IconButton onClick={() => handleDeleteUser(user._id)} disabled={user._id === currentUser?.id || user.role === 'admin'}>
+                  <IconButton onClick={() => handleDeleteClick(user)} disabled={user._id === currentUser?.id || user.role === 'admin'}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -174,6 +182,18 @@ const UserManagement = ({ showSnackbar }) => {
         handleClose={() => setUserFormModalOpen(false)}
         onSave={handleSaveUser}
       />
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, user: null })}>
+        <DialogTitle>Delete User</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete &quot;{deleteDialog.user?.name}&quot; ({deleteDialog.user?.email})?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false, user: null })}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error">Delete</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
